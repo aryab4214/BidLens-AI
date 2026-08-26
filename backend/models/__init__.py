@@ -1,1 +1,1 @@
-# BidLens AI — models package
+# BidLens AI - models package

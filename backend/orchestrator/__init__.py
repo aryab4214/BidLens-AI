@@ -1,1 +1,1 @@
-# BidLens AI — orchestrator package
+# BidLens AI - orchestrator package

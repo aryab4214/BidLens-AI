@@ -1,5 +1,5 @@
 """
-SHA-256 Security Module — Anti-Tampering
+SHA-256 Security Module - Anti-Tampering
 Generates and verifies cryptographic fingerprints of uploaded documents.
 OWNER: Person 1 (You)
 """

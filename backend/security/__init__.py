@@ -1,1 +1,1 @@
-# BidLens AI — security package
+# BidLens AI - security package

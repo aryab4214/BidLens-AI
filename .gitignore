@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node & Next.js
+node_modules/
+.next/
+out/
+
+# App Transient / User Uploads & Generated Outputs
+backend/generated_reports/*.pdf
+backend/uploaded_docs/*
+!backend/uploaded_docs/.gitkeep
+backend/audit_decision_trail.json
+.DS_Store
+Thumbs.db
+

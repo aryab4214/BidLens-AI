@@ -1,1 +1,1 @@
-# BidLens AI — utils package
+# BidLens AI - utils package
