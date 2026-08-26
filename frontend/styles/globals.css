@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Warm Neutrals from Blueprint */
+  --bg-page: #FFF8ED;
+  --bg-sand: #F6EDD9;
+  --bg-stone: #E8E2D1;
+  --card-bg: #FFFFFF;
+  --border: #E8E2D1;
+  --border-light: #F6EDD9;
+  
+  /* Brand Colors */
+  --navy: #0D1B3D;
+  --navy-light: #1A2E5A;
+  --gold: #F2B705;
+  --gold-hover: #D9A404;
+  --gold-light: #FEF8E7;
+
+  /* Semantic Colors from Blueprint */
+  --success: #1FA463;
+  --success-bg: #E8F7EE;
+  --success-border: #B7E8CE;
+  
+  --warning: #F59E0B;
+  --warning-bg: #FEF3C7;
+  --warning-border: #FDE68A;
+  
+  --critical: #E5484D;
+  --critical-bg: #FEECEE;
+  --critical-border: #FDB8BC;
+  
+  --info: #3882F6;
+  --info-bg: #EFF6FF;
+  --info-border: #BFDBFE;
+
+  --text-main: #0D1B3D;
+  --text-muted: #64748B;
+  --text-sub: #475569;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Enhanced, Darker & Easy-to-Scroll Horizontal Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #E2E8F0;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #64748B;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Layout */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-page);
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #FFFFFF;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 20;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px 32px;
+  max-width: 1360px;
+  overflow-y: auto;
+}
+
+/* Badges & Chips */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: default;
+}
+
+.badge-pass {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.badge-exempt {
+  background-color: var(--info-bg);
+  color: var(--info);
+  border: 1px solid var(--info-border);
+}
+
+.badge-fail {
+  background-color: var(--critical-bg);
+  color: var(--critical);
+  border: 1px solid var(--critical-border);
+}
+
+.badge-warning {
+  background-color: var(--warning-bg);
+  color: #B45309;
+  border: 1px solid var(--warning-border);
+}
+
+.badge-neutral {
+  background-color: var(--bg-sand);
+  color: #475569;
+  border: 1px solid var(--bg-stone);
+}
+
+/* Buttons from Blueprint */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+}
+.btn-primary:hover {
+  background-color: var(--gold-hover);
+  box-shadow: 0 4px 12px rgba(242, 183, 5, 0.3);
+}
+
+.btn-navy {
+  background-color: var(--navy);
+  color: #FFFFFF;
+}
+.btn-navy:hover {
+  background-color: var(--navy-light);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--navy);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  background-color: var(--bg-page);
+  border-color: #CBD5E1;
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: #FFFFFF;
+}
+.btn-success:hover {
+  background-color: #188550;
+}
+
+.btn-critical {
+  background-color: var(--critical);
+  color: #FFFFFF;
+}
+.btn-critical:hover {
+  background-color: #C93B40;
+}
+
+/* Cards */
+.card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(13, 27, 61, 0.04);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #FFFFFF;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Sidebar Nav Items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.12s ease-in-out;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-page);
+  color: var(--navy);
+}
+
+.nav-item.active {
+  background-color: var(--gold-light);
+  color: var(--navy);
+  font-weight: 700;
+  border-left: 3px solid var(--gold);
+}
+
+/* Table Styles */
+.table-custom {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.table-custom th {
+  background-color: #FAFAFA;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-custom td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.table-custom tr:hover td {
+  background-color: var(--bg-page);
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(13, 27, 61, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 25px rgba(13, 27, 61, 0.15);
+  width: 90%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
