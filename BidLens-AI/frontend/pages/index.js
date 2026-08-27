@@ -35,9 +35,9 @@ export default function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef(null);
 
-  // Officer Profile & Signature State - Signature must be manually uploaded each session
-  const [officerName, setOfficerName] = useState('Dr. S. Sharma');
-  const [officerDesignation, setOfficerDesignation] = useState('Senior Procurement Officer');
+  // Officer Profile & Signature State - Clean initial state (zero preloading)
+  const [officerName, setOfficerName] = useState('');
+  const [officerDesignation, setOfficerDesignation] = useState('');
   const [hasSignature, setHasSignature] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState(null);
   const [pendingPdfDownloadBidId, setPendingPdfDownloadBidId] = useState(null);
