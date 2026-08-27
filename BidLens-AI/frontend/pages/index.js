@@ -35,9 +35,9 @@ export default function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef(null);
 
-  // Officer Profile & Signature State (Zero preloading)
-  const [officerName, setOfficerName] = useState('');
-  const [officerDesignation, setOfficerDesignation] = useState('');
+  // Officer Profile & Signature State - Signature must be manually uploaded each session
+  const [officerName, setOfficerName] = useState('Dr. S. Sharma');
+  const [officerDesignation, setOfficerDesignation] = useState('Senior Procurement Officer');
   const [hasSignature, setHasSignature] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState(null);
   const [pendingPdfDownloadBidId, setPendingPdfDownloadBidId] = useState(null);
@@ -59,26 +59,6 @@ export default function Home() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Check signature status on initial load
-  useEffect(() => {
-    fetchSignatureStatus();
-  }, []);
-
-  const fetchSignatureStatus = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/review/signature/status`);
-      if (res.ok) {
-        const data = await res.json();
-        setHasSignature(data.has_signature);
-        if (data.signature_preview) {
-          setSignaturePreview(data.signature_preview);
-        }
-      }
-    } catch (e) {
-      console.log('Signature fetch:', e);
-    }
-  };
 
   // 1. Handle Tender RFP Upload from laptop
   const handleTenderUpload = async (file) => {
@@ -109,25 +89,7 @@ export default function Home() {
     }
   };
 
-  // 2. Select Sample Tender RFP
-  const handleSelectSampleTender = async () => {
-    setIsUploading(true);
-    setStatusMessage('Loading official sample Tender RFP (Desktop Computers)...');
-    try {
-      const res = await fetch(`${BACKEND_URL}/document/tender/sample`);
-      if (!res.ok) throw new Error('Sample tender RFP not found');
-      const data = await res.json();
-      setTenderDocument(data.tender_data);
-      setStatusMessage('Official GeM Tender RFP loaded.');
-      setTimeout(() => setStatusMessage(''), 3000);
-    } catch (e) {
-      setStatusMessage(`Error: ${e.message}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // 3. Upload Custom Rules / Policy Document (Directly in Rules screen)
+  // 2. Upload Custom Rules / Policy Document (Directly in Rules screen)
   const handleCustomRulesUpload = (file) => {
     setCustomRulesDocument({
       filename: file.name,
@@ -144,7 +106,7 @@ export default function Home() {
     setTimeout(() => setStatusMessage(''), 3000);
   };
 
-  // 4. Add a vendor proposal file from laptop to queue
+  // 3. Add a vendor proposal file from laptop to queue
   const handleAddVendorFile = async (file) => {
     setIsUploading(true);
     setStatusMessage(`Uploading vendor proposal: ${file.name}...`);
@@ -186,35 +148,15 @@ export default function Home() {
     }
   };
 
-  // 5. Quick add sample vendor file to queue
-  const handleAddSampleVendor = (sampleFilename, vendorLabel, format) => {
-    const newVendorItem = {
-      file_id: sampleFilename,
-      filename: sampleFilename,
-      file_type: format,
-      vendor_name: vendorLabel,
-      status: 'Ready for Audit'
-    };
-
-    setAddedVendors((prev) => {
-      const exists = prev.some((v) => v.file_id === sampleFilename);
-      if (exists) return prev;
-      return [...prev, newVendorItem];
-    });
-
-    setStatusMessage(`Added ${vendorLabel} to evaluation queue.`);
-    setTimeout(() => setStatusMessage(''), 2500);
-  };
-
-  // 6. Remove a vendor from queue
+  // 4. Remove a vendor from queue
   const handleRemoveVendor = (fileId) => {
     setAddedVendors(addedVendors.filter((v) => v.file_id !== fileId));
   };
 
-  // 7. Execute full evaluation of all added vendors against tender RFP
+  // 5. Execute full evaluation of all added vendors against tender RFP
   const handleStartEvaluation = async () => {
     if (!tenderDocument) {
-      alert('Please upload or select a Tender RFP document first.');
+      alert('Please upload a Tender RFP document first.');
       return;
     }
     if (addedVendors.length === 0) {
@@ -264,7 +206,7 @@ export default function Home() {
     }
   };
 
-  // 8. Handle Per-Clause Officer Decision Override with Mandatory Written Note
+  // 6. Handle Per-Clause Officer Decision Override with Mandatory Written Note
   const handleApplyClauseOverride = async (clause, newStatus) => {
     if (!selectedVendor) return;
     const clauseId = clause.clause_id;
@@ -335,7 +277,7 @@ export default function Home() {
     }
   };
 
-  // 9. Interactive Re-evaluation of a Vendor with Rectification File
+  // 7. Interactive Re-evaluation of a Vendor with Rectification File
   const handleSelectVendorForReEval = (vendor) => {
     setReEvalSelectedVendor(vendor);
     setReEvalPreviousResult(vendor);
@@ -380,31 +322,6 @@ export default function Home() {
     }
   };
 
-  const handleQuickLoadRectifiedSample = async (sampleFilename) => {
-    setIsUploading(true);
-    setStatusMessage(`Auditing rectified sample: ${sampleFilename}...`);
-    try {
-      const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_id: sampleFilename, tender_id: tenderDocument?.tender_id || 'GEM/2026/B/892100' }),
-      });
-
-      if (!auditRes.ok) throw new Error('Could not load rectified sample bid');
-      const auditData = await auditRes.json();
-      const newResult = auditData.results;
-      newResult.file_id = sampleFilename;
-
-      setReEvalResult(newResult);
-      setStatusMessage(`Audited rectified submission.`);
-      setTimeout(() => setStatusMessage(''), 3000);
-    } catch (e) {
-      setStatusMessage(`Error: ${e.message}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleApplyReEvaluationToMatrix = () => {
     if (!reEvalResult || !reEvalSelectedVendor) return;
     setBids((prev) => prev.map((b) => (b.file_id === reEvalSelectedVendor.file_id ? reEvalResult : b)));
@@ -420,7 +337,7 @@ export default function Home() {
   const handleDownloadPdf = (bidId) => {
     if (!hasSignature || !officerName.trim()) {
       setPendingPdfDownloadBidId(bidId);
-      setSettingsNotice('Please enter your officer full name and upload your scanned digital signature before generating the official PDF dossier.');
+      setSettingsNotice('Please upload your scanned digital signature before generating the official PDF dossier.');
       setCurrentScreen('settings');
     } else {
       const url = `${BACKEND_URL}/audit/report/pdf/${bidId}?officer_name=${encodeURIComponent(officerName)}`;
@@ -684,7 +601,7 @@ export default function Home() {
           </nav>
         </div>
 
-        {/* Bottom Officer Profile Card (Zero Preloaded State) */}
+        {/* Bottom Officer Profile Card */}
         <div
           style={{ padding: '14px 16px', borderTop: '1px solid var(--border)', backgroundColor: '#FAFAFA', cursor: 'pointer' }}
           onClick={() => setCurrentScreen('settings')}
@@ -699,7 +616,7 @@ export default function Home() {
                 {officerName || 'Officer Not Set'}
               </div>
               <div style={{ fontSize: '10.5px', color: hasSignature ? 'var(--success)' : 'var(--text-muted)' }}>
-                {hasSignature ? '[Signature Synced]' : '[Click to Set Sig]'}
+                {hasSignature ? '[Signature Synced]' : '[Upload Sig Required]'}
               </div>
             </div>
           </div>
@@ -993,7 +910,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── SCREEN 2: CREATE NEW EVALUATION (FULLY INTERACTIVE) ─ */}
+        {/* ── SCREEN 2: CREATE NEW EVALUATION (100% CLEAN & INTERACTIVE) ─ */}
         {currentScreen === 'new-evaluation' && (
           <div>
             <div style={{ marginBottom: '20px' }}>
@@ -1095,13 +1012,6 @@ export default function Home() {
                   >
                     {tenderDocument ? 'Replace Tender RFP File (.PDF)' : 'Choose Tender RFP File (.PDF)'}
                   </button>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ width: '100%', fontSize: '12px' }}
-                    onClick={handleSelectSampleTender}
-                  >
-                    Use Sample GeM Computers RFP
-                  </button>
                 </div>
               </div>
 
@@ -1131,32 +1041,11 @@ export default function Home() {
 
                 <button
                   className="btn btn-primary"
-                  style={{ width: '100%', marginBottom: '12px' }}
+                  style={{ width: '100%', marginBottom: '8px' }}
                   onClick={() => vendorFileInputRef.current && vendorFileInputRef.current.click()}
                 >
                   + Choose Vendor Proposal File from Laptop
                 </button>
-
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', textAlign: 'center' }}>
-                  or select test proposal samples:
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
-                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleAddSampleVendor('Bid_ApexLabs_MSME.pdf', 'Apex Labs Micro Devices LLP (MSME)', 'PDF')}>
-                    + Apex Labs (MSME)
-                  </button>
-                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleAddSampleVendor('Bid_MegaTech_BigBrand.pdf', 'MegaTech Solutions India (Big Brand)', 'PDF')}>
-                    + MegaTech (Big Brand)
-                  </button>
-                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleAddSampleVendor('Bid_GlobalCorp_Ineligible.pdf', 'Global Corporation Tech (Ineligible)', 'PDF')}>
-                    + Global Corp (Ineligible)
-                  </button>
-                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleAddSampleVendor('Bid_ApexLabs_Proposal.docx', 'Apex Labs Technical Proposal', 'DOCX')}>
-                    + Word (.docx)
-                  </button>
-                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleAddSampleVendor('BoQ_PriceSchedule_MegaTech.xlsx', 'MegaTech Price BoQ Schedule', 'XLSX')}>
-                    + Excel (.xlsx)
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -1183,7 +1072,7 @@ export default function Home() {
               <div className="card-body" style={{ padding: 0 }}>
                 {addedVendors.length === 0 ? (
                   <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                    No vendor proposals added yet. Click <strong>"Choose Vendor Proposal File"</strong> or click any test sample above to add vendors to the queue.
+                    No vendor proposals added yet. Click <strong>"Choose Vendor Proposal File"</strong> to select vendor files from your laptop.
                   </div>
                 ) : (
                   <table className="table-custom">
@@ -1738,7 +1627,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── SCREEN 6: RE-EVALUATION (INTERACTIVE & DYNAMIC) ────── */}
+        {/* ── SCREEN 6: RE-EVALUATION (INTERACTIVE & CLEAN) ──────── */}
         {currentScreen === 're-evaluation' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -1817,7 +1706,7 @@ export default function Home() {
                 )}
               </div>
             ) : !reEvalResult ? (
-              /* PHASE 2: UPLOAD RECTIFICATION DOCUMENT */
+              /* PHASE 2: UPLOAD RECTIFICATION DOCUMENT (CLEAN) */
               <div>
                 <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
@@ -1866,16 +1755,6 @@ export default function Home() {
                       >
                         Choose Rectification File from Laptop
                       </button>
-
-                      {reEvalSelectedVendor?.file_info?.vendor_name?.toLowerCase().includes('global') && (
-                        <button
-                          className="btn btn-secondary"
-                          style={{ fontSize: '12px' }}
-                          onClick={() => handleQuickLoadRectifiedSample('Bid_GlobalCorp_Rectified_ReEvaluation.pdf')}
-                        >
-                          Load Rectified Sample (Bid_GlobalCorp_Rectified_ReEvaluation.pdf)
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -2322,7 +2201,7 @@ export default function Home() {
                       <div style={{ fontSize: '11.5px', color: 'var(--success)', fontWeight: 600 }}>✓ Digital Signature Active &amp; Ready for PDF Export</div>
                     </div>
                   ) : (
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No signature image uploaded yet.</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No signature image uploaded for this session. Please upload your signature (.PNG / .JPG).</div>
                   )}
 
                   <input
