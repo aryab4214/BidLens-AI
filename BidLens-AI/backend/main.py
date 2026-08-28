@@ -2,6 +2,7 @@
 BidLens AI - FastAPI Backend Entry Point
 Layer 2 of the teacher-validated architecture.
 """
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import document, audit, review
@@ -13,10 +14,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow frontend (Next.js on port 3000) and any local client to talk to backend
+# Allow frontend (Next.js on localhost:3000 AND deployed Vercel domain)
+# Set ALLOWED_ORIGINS environment variable on Render to your Vercel URL
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+if allowed_origins_env == "*":
+    allow_origins = ["*"]
+else:
+    allow_origins = [o.strip() for o in allowed_origins_env.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

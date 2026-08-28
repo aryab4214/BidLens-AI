@@ -1,0 +1,52 @@
+[
+  {
+    "decision_id": "DEC-1787684303",
+    "audit_id": "e654e0d9-7f2f-48ff-b1cd-c29ffa7a5e38",
+    "action": "APPROVE",
+    "justification": "Compliant MSME offering 5-Year Onsite Warranty and INR 8 Lakhs cost savings below budget.",
+    "officer_name": "Dr. S. Sharma",
+    "officer_designation": "Senior Procurement Officer",
+    "timestamp": "26-Aug-2026 00:28:23",
+    "is_override": false
+  },
+  {
+    "decision_id": "DEC-1787684303",
+    "audit_id": "abb150ea-fedf-4e2d-bfde-5a23d1756df2",
+    "action": "REJECT",
+    "justification": "Mandatory disqualification under GFR Rule 149 & 160 due to expired GSTIN and contradictory PAN numbers in MAF.",
+    "officer_name": "Dr. S. Sharma",
+    "officer_designation": "Senior Procurement Officer",
+    "timestamp": "26-Aug-2026 00:28:23",
+    "is_override": false
+  },
+  {
+    "decision_id": "DEC-1787685620",
+    "audit_id": "4916887a-88cc-4ded-8d04-13128e6649f9",
+    "action": "APPROVE",
+    "justification": "Compliant MSME proposal offering 5-Year Onsite Warranty and INR 8 Lakhs cost savings below budget.",
+    "officer_name": "Dr. S. Sharma",
+    "officer_designation": "Technical Evaluation Committee",
+    "timestamp": "26-Aug-2026 00:50:20",
+    "is_override": false
+  },
+  {
+    "decision_id": "DEC-1787690584",
+    "audit_id": "Bid_GlobalCorp_Ineligible.pdf",
+    "action": "REJECT",
+    "justification": "This shit is rejected",
+    "officer_name": "Dr. S. Sharma",
+    "officer_designation": "Technical Evaluation Committee",
+    "timestamp": "26-Aug-2026 02:13:04",
+    "is_override": false
+  },
+  {
+    "decision_id": "DEC-1787691198",
+    "audit_id": "Bid_GlobalCorp_Ineligible.pdf",
+    "action": "REJECT",
+    "justification": "This shit is filthy",
+    "officer_name": "Dr. S. Sharma",
+    "officer_designation": "Technical Evaluation Committee",
+    "timestamp": "26-Aug-2026 02:23:18",
+    "is_override": false
+  }
+]
