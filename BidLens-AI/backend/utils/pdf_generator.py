@@ -205,6 +205,38 @@ def generate_certified_audit_pdf(
         story.append(t_spot)
         story.append(Spacer(1, 3))
 
+    # ── Government Portal Gateway Cross-Verification ──────────
+    gateways = govt.get("gateways", [])
+    if gateways:
+        story.append(Paragraph("Government Gateway & Portal Verification Handshake (5 Core Registries)", h1_style))
+        gw_table_data = [
+            [
+                Paragraph("<b>Portal / Registry</b>", body_bold),
+                Paragraph("<b>Status Verification</b>", body_bold),
+                Paragraph("<b>Audit Sync Details</b>", body_bold)
+            ]
+        ]
+        for gw in gateways[:5]:
+            gw_details = gw.get("details", {})
+            desc_items = [f"{k.replace('_', ' ').title()}: {v}" for k, v in gw_details.items() if k not in ["portal", "valid_format", "valid"]]
+            gw_table_data.append([
+                Paragraph(gw.get("name", ""), body_style),
+                Paragraph(f"<b>{gw.get('status', '')}</b>", body_style),
+                Paragraph(" | ".join(desc_items) if desc_items else "Portal records verified", body_style)
+            ])
+        t_gw = Table(gw_table_data, colWidths=[2.2*inch, 1.8*inch, 3.3*inch])
+        t_gw.setStyle(TableStyle([
+            ('BOX', (0,0), (-1,-1), 1, colors.black),
+            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
+            ('LINEBELOW', (0,0), (-1,0), 1.2, colors.black),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('LEFTPADDING', (0,0), (-1,-1), 4),
+            ('RIGHTPADDING', (0,0), (-1,-1), 4),
+        ]))
+        story.append(t_gw)
+        story.append(Spacer(1, 3))
+
     # ── 5. Clause-by-Clause Compliance Matrix (Black & White) ─
     story.append(Paragraph("Clause-by-Clause GFR Compliance Verification Matrix", h1_style))
     clause_table_data = [

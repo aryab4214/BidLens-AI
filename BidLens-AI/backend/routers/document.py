@@ -18,7 +18,10 @@ UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploaded_docs")
 SAMPLE_BIDS_DIR = os.path.join(PROJECT_ROOT, "data", "sample_bids")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".xlsx", ".xls", ".csv"}
+ALLOWED_EXTENSIONS = {
+    ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".csv",
+    ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp"
+}
 
 
 @router.post("/upload")

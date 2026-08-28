@@ -14,7 +14,7 @@ from orchestrator.ai_processing import extract_document_data
 from orchestrator.rule_engine import evaluate_compliance
 from orchestrator.govt_verify import verify_government_credentials
 from evidence_risk.graph_engine import build_compliance_knowledge_graph
-from evidence_risk.contradiction import detect_cross_document_contradictions
+from evidence_risk.contradiction import detect_cross_document_contradictions, calculate_claim_integrity_score
 from evidence_risk.risk_scorer import compute_risk_and_value_intelligence
 
 
@@ -34,8 +34,9 @@ async def run_full_audit(file_path: str, tender_requirements: dict = None) -> di
 
     clause_results, govt_verification = await asyncio.gather(rule_task, govt_task)
 
-    # ── 3. Layer 4: Contradiction Detection ───────────────────
+    # ── 3. Layer 4: Contradiction & Fraud Detection ───────────
     contradictions = detect_cross_document_contradictions(extracted, govt_verification)
+    claim_integrity = calculate_claim_integrity_score(extracted, contradictions)
 
     # ── 4. Layer 4: Risk Scoring & MSME Value Spotlight ───────
     risk_and_value = compute_risk_and_value_intelligence(extracted, clause_results, contradictions)
@@ -72,8 +73,8 @@ async def run_full_audit(file_path: str, tender_requirements: dict = None) -> di
         "rejection_risk_analysis": risk_and_value["rejection_risk"],
         "value_spotlight": risk_and_value["value_spotlight"],
         "contradictions_detected": contradictions,
+        "claim_integrity": claim_integrity,
         "bid_repair_guidance": risk_and_value["bid_repair"],
         "clause_level_decisions": clause_results,
         "government_verification": govt_verification,
-        "knowledge_graph": knowledge_graph
     }

@@ -996,7 +996,7 @@ export default function Home() {
                   type="file"
                   ref={tenderFileInputRef}
                   style={{ display: 'none' }}
-                  accept=".pdf,.docx,.doc"
+                  accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       handleTenderUpload(e.target.files[0]);
@@ -1010,7 +1010,7 @@ export default function Home() {
                     style={{ width: '100%' }}
                     onClick={() => tenderFileInputRef.current && tenderFileInputRef.current.click()}
                   >
-                    {tenderDocument ? 'Replace Tender RFP File (.PDF)' : 'Choose Tender RFP File (.PDF)'}
+                    {tenderDocument ? 'Replace Tender RFP Document' : 'Choose Tender RFP File (.PDF / Image)'}
                   </button>
                 </div>
               </div>
@@ -1024,14 +1024,14 @@ export default function Home() {
                   Vendor Submissions
                 </h3>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 16px 0', textAlign: 'center' }}>
-                  Select vendor proposal files one by one (PDF, Word .docx, Excel .xlsx)
+                  Select proposal files or scanned document images (PDF, Scanned JPG/PNG, Word, Excel)
                 </p>
 
                 <input
                   type="file"
                   ref={vendorFileInputRef}
                   style={{ display: 'none' }}
-                  accept=".pdf,.docx,.doc,.xlsx,.xls,.csv"
+                  accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       handleAddVendorFile(e.target.files[0]);
@@ -1044,7 +1044,7 @@ export default function Home() {
                   style={{ width: '100%', marginBottom: '8px' }}
                   onClick={() => vendorFileInputRef.current && vendorFileInputRef.current.click()}
                 >
-                  + Choose Vendor Proposal File from Laptop
+                  + Choose Vendor Proposal / Scanned File from Laptop
                 </button>
               </div>
             </div>
@@ -1455,16 +1455,84 @@ export default function Home() {
             {selectedVendor?.contradictions_detected && selectedVendor.contradictions_detected.length > 0 && (
               <div className="card" style={{ marginBottom: '20px', backgroundColor: 'var(--critical-bg)', border: '1.5px solid var(--critical-border)' }}>
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--critical-border)', fontWeight: 800, color: 'var(--critical)', fontSize: '13.5px' }}>
-                  Critical Fraud Warning: Cross-Document Discrepancies Detected ({selectedVendor.contradictions_detected.length})
+                  Critical Fraud Warning: Cross-Document Discrepancies &amp; Unsubstantiated Claims Detected ({selectedVendor.contradictions_detected.length})
                 </div>
                 <div className="card-body">
                   {selectedVendor.contradictions_detected.map((ct, i) => (
                     <div key={i} style={{ marginBottom: '10px' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--critical)', fontSize: '13px' }}>* {ct.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className={`badge ${ct.severity === 'CRITICAL' ? 'badge-fail' : 'badge-warning'}`} style={{ fontSize: '10px' }}>
+                          {ct.severity}
+                        </span>
+                        <strong style={{ color: 'var(--critical)', fontSize: '13px' }}>{ct.title}</strong>
+                      </div>
                       <div style={{ fontSize: '12px', color: '#7F1D1D', marginTop: '2px' }}>{ct.description}</div>
                       <div style={{ fontSize: '11.5px', color: 'var(--critical)', marginTop: '2px' }}><strong>Action:</strong> {ct.remedy}</div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Government Gateway Cross-Verification Portal (5 Core Registries) */}
+            <div className="card" style={{ marginBottom: '20px' }}>
+              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--navy)' }}>
+                    Government Gateway Cross-Verification Handshake (5 Core Registries)
+                  </h3>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    Live synchronization against GSTN, ITD PAN, MCA21, Udyam MSME, EPFO/ESIC, and Central Debarment Watchlist
+                  </div>
+                </div>
+                <span className={`badge ${selectedVendor?.government_verification?.overall_govt_verification === 'PASS' ? 'badge-pass' : 'badge-fail'}`}>
+                  {selectedVendor?.government_verification?.verified_gateways_count || 5}/{selectedVendor?.government_verification?.total_gateways || 5} Portals Verified
+                </span>
+              </div>
+              <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                {selectedVendor?.government_verification?.gateways ? (
+                  selectedVendor.government_verification.gateways.map((gw, idx) => (
+                    <div key={idx} style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: '#FAFAFA' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--navy)' }}>{gw.name}</div>
+                        <span className={`badge ${gw.badge === 'PASS' ? 'badge-pass' : gw.badge === 'NEUTRAL' ? 'badge-neutral' : 'badge-fail'}`} style={{ fontSize: '9.5px', padding: '2px 5px' }}>
+                          {gw.badge}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: gw.badge === 'PASS' ? 'var(--success)' : gw.badge === 'NEUTRAL' ? 'var(--text-muted)' : 'var(--critical)' }}>
+                        {gw.status}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {gw.details?.taxpayer_status ? `Status: ${gw.details.taxpayer_status}` : gw.details?.company_status ? `RoC: ${gw.details.company_status}` : gw.details?.category ? `Category: ${gw.details.category}` : gw.details?.blacklisting_orders ? `Debarment: ${gw.details.blacklisting_orders}` : 'Registry verified'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Gateway verification logs synchronizing...</div>
+                )}
+              </div>
+            </div>
+
+            {/* Claim Integrity & Authenticity Index */}
+            {selectedVendor?.claim_integrity && (
+              <div className="card" style={{ marginBottom: '20px', padding: '16px 20px', backgroundColor: selectedVendor.claim_integrity.integrity_score >= 80 ? 'var(--info-bg)' : 'var(--critical-bg)', border: `1px solid ${selectedVendor.claim_integrity.integrity_score >= 80 ? 'var(--info-border)' : 'var(--critical-border)'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 700, color: selectedVendor.claim_integrity.integrity_score >= 80 ? 'var(--info)' : 'var(--critical)', textTransform: 'uppercase' }}>
+                      Claim Evidence &amp; Authenticity Confidence Index
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--navy)', marginTop: '2px' }}>
+                      Score: {selectedVendor.claim_integrity.integrity_score}/100 — {selectedVendor.claim_integrity.integrity_tier}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-main)', marginTop: '4px' }}>
+                      {selectedVendor.claim_integrity.description}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span className={`badge ${selectedVendor.claim_integrity.unsubstantiated_claims_count === 0 ? 'badge-pass' : 'badge-fail'}`}>
+                      {selectedVendor.claim_integrity.unsubstantiated_claims_count} Unsubstantiated Claims
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -1730,7 +1798,7 @@ export default function Home() {
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--info)" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                     </div>
                     <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--navy)' }}>
-                      Upload Rectification / Clarification Document (.PDF / .DOCX)
+                      Upload Rectification / Clarification Document (.PDF / .DOCX / Scanned Image)
                     </h4>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 16px 0' }}>
                       Upload revised GSTIN certificates, corrected MAF authorization, or bank guarantee proof for {reEvalSelectedVendor?.file_info?.vendor_name}
@@ -1740,7 +1808,7 @@ export default function Home() {
                       type="file"
                       ref={reEvalFileInputRef}
                       style={{ display: 'none' }}
-                      accept=".pdf,.docx,.doc,.xlsx,.xls,.csv"
+                      accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp"
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
                           handleUploadRectificationFile(e.target.files[0]);
@@ -2054,7 +2122,7 @@ export default function Home() {
                   type="file"
                   ref={rulesFileInputRef}
                   style={{ display: 'none' }}
-                  accept=".pdf,.docx,.doc,.txt"
+                  accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       handleCustomRulesUpload(e.target.files[0]);
