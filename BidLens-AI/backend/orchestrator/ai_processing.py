@@ -239,7 +239,14 @@ def extract_document_data(file_path: str) -> dict:
     quote_matches = re.findall(r"(?:INR|Rs\.?|₹|\bTotal\b[^\d]*)\s*([\d,]+(?:\.\d{2})?)", full_text, re.IGNORECASE)
     total_quote = None
     if quote_matches:
-        cleaned = [float(q.replace(",", "")) for q in quote_matches if float(q.replace(",", "")) > 100000]
+        cleaned = []
+        for q in quote_matches:
+            val_str = q.replace(",", "").strip()
+            try:
+                if val_str and float(val_str) > 100000:
+                    cleaned.append(float(val_str))
+            except ValueError:
+                continue
         if cleaned:
             total_quote = cleaned[0]
 

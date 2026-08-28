@@ -1,15 +1,15 @@
 """
 Official Black & White PDF Audit Dossier Generator - Layer 5
 Produces a formal, air-gapped, government-grade black-and-white compliance dossier
-with official typography, table structures, manual physical sign-off box,
-and a dedicated Page 2 Supervisory Override & Justification Log.
+with tight professional typography, clean table structures, manual physical sign-off box,
+and an integrated Supervisory Override & Justification Log without awkward page breaks.
 """
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
 )
 from reportlab.pdfgen import canvas
 import os
@@ -46,10 +46,10 @@ class OfficialReportCanvas(canvas.Canvas):
         self.line(40, 748, 572, 748)
 
         # Official Footer (Pure Black & White)
-        self.line(40, 40, 572, 40)
+        self.line(40, 36, 572, 36)
         self.setFont("Helvetica", 7.5)
-        self.drawString(40, 28, "Certified by BidLens AI Platform | Cryptographically Fingerprinted & Tamper-Proof")
-        self.drawRightString(572, 28, f"Page {self._pageNumber} of {total_pages}")
+        self.drawString(40, 26, "Certified by BidLens AI Platform | Cryptographically Fingerprinted & Tamper-Proof")
+        self.drawRightString(572, 26, f"Page {self._pageNumber} of {total_pages}")
         self.restoreState()
 
 
@@ -62,55 +62,55 @@ def generate_certified_audit_pdf(
     **kwargs
 ) -> str:
     """
-    Builds a clean, official black-and-white PDF audit report with Page 2 Supervisory Override Log
-    and manual physical sign-off box (digital signature removed for transparent physical verification).
+    Builds a clean, official black-and-white PDF audit report with integrated Supervisory Override Log
+    and manual physical sign-off box with smooth document flow (no awkward empty page gaps).
     """
     doc = SimpleDocTemplate(
         output_filepath,
         pagesize=letter,
-        leftMargin=40,
-        rightMargin=40,
-        topMargin=50,
-        bottomMargin=50
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=44,
+        bottomMargin=44
     )
 
     styles = getSampleStyleSheet()
 
-    # Black & White Styles
+    # Black & White Compact Professional Styles
     title_style = ParagraphStyle(
         'BWTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=13,
-        leading=17,
+        fontSize=12,
+        leading=15,
         textColor=colors.black,
-        spaceAfter=2
+        spaceAfter=1
     )
     subtitle_style = ParagraphStyle(
         'BWSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8.5,
-        leading=11,
+        fontSize=8,
+        leading=10,
         textColor=colors.black,
-        spaceAfter=5
+        spaceAfter=4
     )
     h1_style = ParagraphStyle(
         'BWH1',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=9.5,
-        leading=12.5,
+        fontSize=9,
+        leading=11.5,
         textColor=colors.black,
-        spaceBefore=7,
-        spaceAfter=3
+        spaceBefore=6,
+        spaceAfter=2
     )
     body_style = ParagraphStyle(
         'BWBody',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8,
-        leading=10.5,
+        fontSize=7.5,
+        leading=9.5,
         textColor=colors.black
     )
     body_bold = ParagraphStyle(
@@ -122,8 +122,8 @@ def generate_certified_audit_pdf(
         'BWCallout',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8,
-        leading=11,
+        fontSize=7.5,
+        leading=10,
         textColor=colors.black
     )
 
@@ -147,7 +147,7 @@ def generate_certified_audit_pdf(
     # ── 1. Document Title & Header ────────────────────────────
     story.append(Paragraph("BID EVALUATION & STATUTORY COMPLIANCE AUDIT DOSSIER", title_style))
     story.append(Paragraph(f"Tender Ref: GEM/2026/B/892100 | Evaluation Timestamp: {datetime.datetime.now().strftime('%d-%b-%Y %H:%M:%S')}", subtitle_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=1, spaceAfter=5))
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=1, spaceAfter=4))
 
     # ── 2. Executive Overview Table (Black & White) ───────────
     overview_data = [
@@ -165,30 +165,30 @@ def generate_certified_audit_pdf(
         ]
     ]
 
-    t_overview = Table(overview_data, colWidths=[3.65*inch, 3.65*inch])
+    t_overview = Table(overview_data, colWidths=[3.7*inch, 3.7*inch])
     t_overview.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.black),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('TOPPADDING', (0,0), (-1,-1), 2),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+        ('LEFTPADDING', (0,0), (-1,-1), 4),
+        ('RIGHTPADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(t_overview)
+    story.append(Spacer(1, 2))
+
+    # ── 3. Executive Summary Callout ──────────────────────────
+    exec_summary = audit_data.get("executive_summary", "")
+    exec_box = Table([[Paragraph(f"<b>Executive Summary & Recommendation:</b> {exec_summary}", callout_style)]], colWidths=[7.4*inch])
+    exec_box.setStyle(TableStyle([
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
         ('TOPPADDING', (0,0), (-1,-1), 2.5),
         ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
         ('LEFTPADDING', (0,0), (-1,-1), 4),
         ('RIGHTPADDING', (0,0), (-1,-1), 4),
     ]))
-    story.append(t_overview)
-    story.append(Spacer(1, 3))
-
-    # ── 3. Executive Summary Callout ──────────────────────────
-    exec_summary = audit_data.get("executive_summary", "")
-    exec_box = Table([[Paragraph(f"<b>Executive Summary & Recommendation:</b> {exec_summary}", callout_style)]], colWidths=[7.3*inch])
-    exec_box.setStyle(TableStyle([
-        ('BOX', (0,0), (-1,-1), 1, colors.black),
-        ('TOPPADDING', (0,0), (-1,-1), 3),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-        ('LEFTPADDING', (0,0), (-1,-1), 5),
-        ('RIGHTPADDING', (0,0), (-1,-1), 5),
-    ]))
     story.append(exec_box)
-    story.append(Spacer(1, 3))
+    story.append(Spacer(1, 2))
 
     # ── 4. Value-for-Money Spotlight (If Applicable) ──────────
     if value_spot.get("is_spotlight_candidate"):
@@ -197,16 +197,16 @@ def generate_certified_audit_pdf(
         for perk in value_spot.get("value_highlights", []):
             spotlight_items.append(Paragraph(f"- {perk}", body_style))
         
-        t_spot = Table([[item] for item in spotlight_items], colWidths=[7.3*inch])
+        t_spot = Table([[item] for item in spotlight_items], colWidths=[7.4*inch])
         t_spot.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
-            ('TOPPADDING', (0,0), (-1,-1), 2.5),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
-            ('LEFTPADDING', (0,0), (-1,-1), 5),
-            ('RIGHTPADDING', (0,0), (-1,-1), 5),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('LEFTPADDING', (0,0), (-1,-1), 4),
+            ('RIGHTPADDING', (0,0), (-1,-1), 4),
         ]))
         story.append(t_spot)
-        story.append(Spacer(1, 3))
+        story.append(Spacer(1, 2))
 
     # ── Government Portal Gateway Cross-Verification ──────────
     gateways = govt.get("gateways", [])
@@ -227,18 +227,18 @@ def generate_certified_audit_pdf(
                 Paragraph(f"<b>{gw.get('status', '')}</b>", body_style),
                 Paragraph(" | ".join(desc_items) if desc_items else "Portal records verified", body_style)
             ])
-        t_gw = Table(gw_table_data, colWidths=[2.2*inch, 1.8*inch, 3.3*inch])
+        t_gw = Table(gw_table_data, colWidths=[2.2*inch, 1.8*inch, 3.4*inch])
         t_gw.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
             ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
             ('LINEBELOW', (0,0), (-1,0), 1.2, colors.black),
-            ('TOPPADDING', (0,0), (-1,-1), 2),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
-            ('LEFTPADDING', (0,0), (-1,-1), 4),
-            ('RIGHTPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 1.5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 1.5),
+            ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
         ]))
         story.append(t_gw)
-        story.append(Spacer(1, 3))
+        story.append(Spacer(1, 2))
 
     # ── 5. Clause-by-Clause Compliance Matrix (Black & White) ─
     story.append(Paragraph("Clause-by-Clause GFR Compliance Verification Matrix", h1_style))
@@ -265,18 +265,18 @@ def generate_certified_audit_pdf(
             Paragraph(f"<b>Rule:</b> {c.get('regulation_ref')}<br/><b>Evidence:</b> {c.get('evidence')}", body_style)
         ])
 
-    t_clauses = Table(clause_table_data, colWidths=[1.0*inch, 1.8*inch, 0.9*inch, 3.6*inch])
+    t_clauses = Table(clause_table_data, colWidths=[1.0*inch, 1.8*inch, 0.9*inch, 3.7*inch])
     t_clauses.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.black),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
         ('LINEBELOW', (0,0), (-1,0), 1.2, colors.black),
-        ('TOPPADDING', (0,0), (-1,-1), 2.5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
-        ('LEFTPADDING', (0,0), (-1,-1), 4),
-        ('RIGHTPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 2),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+        ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+        ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
     ]))
     story.append(t_clauses)
-    story.append(Spacer(1, 3))
+    story.append(Spacer(1, 2))
 
     # ── 6. Contradictions & Discrepancies (If any) ────────────
     if contradictions:
@@ -295,18 +295,18 @@ def generate_certified_audit_pdf(
                 Paragraph(f"<b>Description:</b> {ct.get('description')}<br/><b>Action Required:</b> {ct.get('remedy')}", body_style)
             ])
 
-        t_contra = Table(contra_data, colWidths=[1.8*inch, 0.9*inch, 4.6*inch])
+        t_contra = Table(contra_data, colWidths=[1.8*inch, 0.9*inch, 4.7*inch])
         t_contra.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
             ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
             ('LINEBELOW', (0,0), (-1,0), 1.2, colors.black),
-            ('TOPPADDING', (0,0), (-1,-1), 2.5),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
-            ('LEFTPADDING', (0,0), (-1,-1), 4),
-            ('RIGHTPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
         ]))
         story.append(t_contra)
-        story.append(Spacer(1, 3))
+        story.append(Spacer(1, 2))
 
     # ── 7. Officer Sign-Off Block (Manual Physical Sign-Off) ───
     story.append(Paragraph("Procurement Officer Evaluation & Manual Physical Sign-Off", h1_style))
@@ -334,44 +334,44 @@ def generate_certified_audit_pdf(
             Paragraph(
                 "<b>Statutory Verification Notice:</b><br/>"
                 "This document is a certified public procurement audit dossier generated under GFR 2017. "
-                "Any supervisory override is recorded on Page 2 with mandatory legal justification.",
+                "Any supervisory override is recorded below with mandatory legal justification.",
                 body_style
             )
         ]
     ]
 
-    t_sign = Table(sign_off_data, colWidths=[3.65*inch, 3.65*inch])
+    t_sign = Table(sign_off_data, colWidths=[3.7*inch, 3.7*inch])
     t_sign.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.black),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
-        ('TOPPADDING', (0,0), (-1,-1), 3),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+        ('TOPPADDING', (0,0), (-1,-1), 2.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
         ('LEFTPADDING', (0,0), (-1,-1), 4),
         ('RIGHTPADDING', (0,0), (-1,-1), 4),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
     ]))
     story.append(t_sign)
 
-    # ── 8. PAGE 2: OFFICER OVERRIDE & STATUTORY JUSTIFICATION TRAIL ──
-    # If officer has entered custom notes/overrides, generate Page 2
+    # ── 8. SUPERVISORY OVERRIDE & STATUTORY JUSTIFICATION TRAIL (Seamless Flow) ──
+    # Placed directly following the sign-off block without artificial page breaks!
     if officer_overrides and len(officer_overrides) > 0:
-        story.append(PageBreak())
-        story.append(Paragraph("SUPERVISORY OVERRIDE & STATUTORY JUSTIFICATION TRAIL", title_style))
-        story.append(Paragraph(f"Vendor: {vendor_name} | Evaluating Officer: {eval_officer} ({eval_designation}) | Statutory Accountability Record", subtitle_style))
-        story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=1, spaceAfter=8))
+        story.append(Spacer(1, 4))
+        story.append(Paragraph("SUPERVISORY OVERRIDE & STATUTORY JUSTIFICATION LOG", title_style))
+        story.append(Paragraph(f"Vendor: {vendor_name} | Evaluating Officer: {eval_officer} ({eval_designation}) | Statutory Accountability Trail", subtitle_style))
+        story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=1, spaceAfter=4))
 
         story.append(Paragraph(
-            "<b>Mandatory Legal Notice:</b> In accordance with government procurement guidelines, any supervisory alteration, "
-            "relaxation, or override of automated GFR criteria requires recorded written justification with officer identification.",
+            "<b>Mandatory Legal Accountability Notice:</b> In accordance with public procurement guidelines, "
+            "any supervisory override of automated GFR criteria requires recorded written justification with officer identification.",
             callout_style
         ))
-        story.append(Spacer(1, 6))
+        story.append(Spacer(1, 3))
 
         override_table_data = [
             [
                 Paragraph("<b>Clause / Requirement</b>", body_bold),
-                Paragraph("<b>Original Verdict</b>", body_bold),
-                Paragraph("<b>Officer Decision</b>", body_bold),
+                Paragraph("<b>Original</b>", body_bold),
+                Paragraph("<b>Override Verdict</b>", body_bold),
                 Paragraph("<b>Mandatory Written Justification & Legal Basis</b>", body_bold),
                 Paragraph("<b>Timestamp</b>", body_bold)
             ]
@@ -386,25 +386,25 @@ def generate_certified_audit_pdf(
                 Paragraph(f"{odata.get('timestamp', datetime.datetime.now().strftime('%d-%b-%Y %H:%M'))}", body_style)
             ])
 
-        t_over = Table(override_table_data, colWidths=[1.5*inch, 0.9*inch, 0.9*inch, 2.8*inch, 1.2*inch])
+        t_over = Table(override_table_data, colWidths=[1.5*inch, 0.8*inch, 1.0*inch, 2.9*inch, 1.2*inch])
         t_over.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
             ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
             ('LINEBELOW', (0,0), (-1,0), 1.2, colors.black),
-            ('TOPPADDING', (0,0), (-1,-1), 3),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-            ('LEFTPADDING', (0,0), (-1,-1), 4),
-            ('RIGHTPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 2.5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
+            ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         story.append(t_over)
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 4))
 
-        # Officer Confirmation Box on Page 2 with Manual Physical Sign-Off
+        # Officer Confirmation Box for Overrides with Manual Physical Sign-Off
         p2_sign_data = [
             [
                 Paragraph(
-                    f"<b>Supervisory Officer Physical Attestation:</b><br/>"
+                    f"<b>Supervisory Officer Physical Attestation for Overrides:</b><br/>"
                     f"I, <b>{eval_officer}</b> ({eval_designation}), hereby certify under official accountability that the justifications "
                     f"and overrides recorded above are strictly in accordance with GFR 2017 and authorized procurement delegations.<br/><br/>"
                     f"_____________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date: ____________________<br/>"
@@ -413,13 +413,13 @@ def generate_certified_audit_pdf(
                 )
             ]
         ]
-        t_p2_sign = Table(p2_sign_data, colWidths=[7.3*inch])
+        t_p2_sign = Table(p2_sign_data, colWidths=[7.4*inch])
         t_p2_sign.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
-            ('TOPPADDING', (0,0), (-1,-1), 4),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-            ('LEFTPADDING', (0,0), (-1,-1), 5),
-            ('RIGHTPADDING', (0,0), (-1,-1), 5),
+            ('TOPPADDING', (0,0), (-1,-1), 3),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('LEFTPADDING', (0,0), (-1,-1), 4),
+            ('RIGHTPADDING', (0,0), (-1,-1), 4),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ]))
         story.append(t_p2_sign)
