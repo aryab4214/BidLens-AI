@@ -1,7 +1,7 @@
 """
 Official Black & White PDF Audit Dossier Generator - Layer 5
 Produces a formal, air-gapped, government-grade black-and-white compliance dossier
-with official typography, table structures, embedded digital officer signature,
+with official typography, table structures, manual physical sign-off box,
 and a dedicated Page 2 Supervisory Override & Justification Log.
 """
 from reportlab.lib import colors
@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable, Image as RLImage
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
 )
 from reportlab.pdfgen import canvas
 import os
@@ -57,11 +57,13 @@ def generate_certified_audit_pdf(
     audit_data: dict,
     output_filepath: str,
     officer_name: str = None,
-    signature_path: str = None,
-    officer_overrides: dict = None
+    officer_designation: str = None,
+    officer_overrides: dict = None,
+    **kwargs
 ) -> str:
     """
-    Builds a clean, official black-and-white PDF audit report with Page 2 Supervisory Override Log.
+    Builds a clean, official black-and-white PDF audit report with Page 2 Supervisory Override Log
+    and manual physical sign-off box (digital signature removed for transparent physical verification).
     """
     doc = SimpleDocTemplate(
         output_filepath,
@@ -140,6 +142,7 @@ def generate_certified_audit_pdf(
     status_text = comp_sum.get("overall_status", "PENDING")
     risk_tier = comp_sum.get("risk_tier", "LOW")
     eval_officer = officer_name or "Procurement Officer"
+    eval_designation = officer_designation or "Senior Procurement Officer"
 
     # ── 1. Document Title & Header ────────────────────────────
     story.append(Paragraph("BID EVALUATION & STATUTORY COMPLIANCE AUDIT DOSSIER", title_style))
@@ -305,20 +308,8 @@ def generate_certified_audit_pdf(
         story.append(t_contra)
         story.append(Spacer(1, 3))
 
-    # ── 7. Officer Sign-Off Block with Digital Signature ───────
-    story.append(Paragraph("Procurement Officer Evaluation & Digital Sign-off", h1_style))
-
-    sig_element = Paragraph("<i>[Digital Signature Affixed]</i>", body_style)
-    if not signature_path:
-        default_sig = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploaded_docs", "officer_signature.png")
-        if os.path.exists(default_sig):
-            signature_path = default_sig
-
-    if signature_path and os.path.exists(signature_path):
-        try:
-            sig_element = RLImage(signature_path, width=1.5*inch, height=0.5*inch)
-        except Exception:
-            sig_element = Paragraph(f"<b>[Signed Digitally by {eval_officer}]</b>", body_style)
+    # ── 7. Officer Sign-Off Block (Manual Physical Sign-Off) ───
+    story.append(Paragraph("Procurement Officer Evaluation & Manual Physical Sign-Off", h1_style))
 
     sign_off_data = [
         [
@@ -327,11 +318,25 @@ def generate_certified_audit_pdf(
         ],
         [
             Paragraph("<b>Integrity Check:</b> SHA-256 Verified & Tamper-Proof", body_style),
+            Paragraph(f"<b>Designation:</b> {eval_designation}", body_style),
+        ],
+        [
+            Paragraph(f"<b>Evaluation Timestamp:</b> {datetime.datetime.now().strftime('%d-%b-%Y %H:%M:%S')}", body_style),
             Paragraph(f"<b>Decision Status:</b> {status_text}", body_style),
         ],
         [
-            Paragraph(f"<b>Timestamp:</b> {datetime.datetime.now().strftime('%d-%b-%Y %H:%M:%S')}", body_style),
-            sig_element
+            Paragraph(
+                "<b>Manual Physical Sign-Off & Official Seal:</b><br/><br/>"
+                "___________________________________________________<br/>"
+                "<i>Physical Signature & Official Stamp of Officer (Sign manually on printout)</i>",
+                body_style
+            ),
+            Paragraph(
+                "<b>Statutory Verification Notice:</b><br/>"
+                "This document is a certified public procurement audit dossier generated under GFR 2017. "
+                "Any supervisory override is recorded on Page 2 with mandatory legal justification.",
+                body_style
+            )
         ]
     ]
 
@@ -339,11 +344,11 @@ def generate_certified_audit_pdf(
     t_sign.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.black),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
-        ('TOPPADDING', (0,0), (-1,-1), 2.5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ('LEFTPADDING', (0,0), (-1,-1), 4),
         ('RIGHTPADDING', (0,0), (-1,-1), 4),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
     ]))
     story.append(t_sign)
 
@@ -352,7 +357,7 @@ def generate_certified_audit_pdf(
     if officer_overrides and len(officer_overrides) > 0:
         story.append(PageBreak())
         story.append(Paragraph("SUPERVISORY OVERRIDE & STATUTORY JUSTIFICATION TRAIL", title_style))
-        story.append(Paragraph(f"Vendor: {vendor_name} | Evaluating Officer: {eval_officer} | Statutory Accountability Record", subtitle_style))
+        story.append(Paragraph(f"Vendor: {vendor_name} | Evaluating Officer: {eval_officer} ({eval_designation}) | Statutory Accountability Record", subtitle_style))
         story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=1, spaceAfter=8))
 
         story.append(Paragraph(
@@ -395,17 +400,22 @@ def generate_certified_audit_pdf(
         story.append(t_over)
         story.append(Spacer(1, 10))
 
-        # Officer Confirmation Box on Page 2
+        # Officer Confirmation Box on Page 2 with Manual Physical Sign-Off
         p2_sign_data = [
             [
-                Paragraph(f"<b>Supervisory Officer Confirmation:</b><br/>I hereby certify under official accountability that the justifications recorded above are strictly in accordance with GFR 2017 and authorized procurement delegations.", body_style),
-                sig_element
+                Paragraph(
+                    f"<b>Supervisory Officer Physical Attestation:</b><br/>"
+                    f"I, <b>{eval_officer}</b> ({eval_designation}), hereby certify under official accountability that the justifications "
+                    f"and overrides recorded above are strictly in accordance with GFR 2017 and authorized procurement delegations.<br/><br/>"
+                    f"_____________________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date: ____________________<br/>"
+                    f"<i>Manual Signature & Official Stamp of Supervisory Officer</i>",
+                    body_style
+                )
             ]
         ]
-        t_p2_sign = Table(p2_sign_data, colWidths=[5.3*inch, 2.0*inch])
+        t_p2_sign = Table(p2_sign_data, colWidths=[7.3*inch])
         t_p2_sign.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 1, colors.black),
-            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.black),
             ('TOPPADDING', (0,0), (-1,-1), 4),
             ('BOTTOMPADDING', (0,0), (-1,-1), 4),
             ('LEFTPADDING', (0,0), (-1,-1), 5),

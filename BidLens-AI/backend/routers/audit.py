@@ -80,7 +80,6 @@ async def trigger_audit(payload: RunAuditPayload):
     generate_certified_audit_pdf(
         audit_results,
         pdf_report_path,
-        signature_path=SIG_FILE if os.path.exists(SIG_FILE) else None,
         officer_overrides=AUDIT_OVERRIDES.get(audit_id, {})
     )
 
@@ -148,7 +147,8 @@ def get_audit_status(audit_id: str):
 @router.get("/report/pdf/{audit_id}")
 def download_audit_pdf(
     audit_id: str,
-    officer_name: Optional[str] = Query(None, description="Name of evaluating procurement officer")
+    officer_name: Optional[str] = Query(None, description="Name of evaluating procurement officer"),
+    officer_designation: Optional[str] = Query(None, description="Designation of evaluating procurement officer")
 ):
     """
     Download the Official Black & White PDF Audit Dossier with Page 2 Override Log.
@@ -161,7 +161,7 @@ def download_audit_pdf(
             AUDIT_CACHE[audit_id],
             pdf_report_path,
             officer_name=officer_name,
-            signature_path=SIG_FILE if os.path.exists(SIG_FILE) else None,
+            officer_designation=officer_designation,
             officer_overrides=AUDIT_OVERRIDES.get(audit_id, {})
         )
     elif not os.path.exists(pdf_report_path):
