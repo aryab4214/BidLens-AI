@@ -1059,7 +1059,7 @@ export default function Home() {
             <div className="card" style={{ padding: '16px 20px', backgroundColor: 'var(--gold-light)', border: '1.5px solid var(--gold)', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--navy)' }}>
-                  ⚡ 1-Click Complete Demonstration &amp; Fast Audit
+                  1-Click Complete Demonstration &amp; Fast Audit
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                   Pre-loads the 12-page Computer Tender RFP and 4 multi-format vendor proposals to run an end-to-end evaluation immediately.
@@ -1071,7 +1071,7 @@ export default function Home() {
                 onClick={handleOneClickCompleteEvaluation}
                 disabled={isUploading}
               >
-                {isUploading ? 'Auditing...' : '⚡ 1-Click Complete Evaluation →'}
+                {isUploading ? 'Auditing...' : '1-Click Complete Evaluation →'}
               </button>
             </div>
 
@@ -1171,7 +1171,7 @@ export default function Home() {
                     onClick={handleLoadSampleTender}
                     disabled={isUploading}
                   >
-                    ⚡ Load Pre-Packaged Tender RFP (GEM/2026/B/892100)
+                    Load Pre-Packaged Tender RFP (GEM/2026/B/892100)
                   </button>
                 </div>
               </div>
@@ -1214,7 +1214,7 @@ export default function Home() {
                     onClick={handleLoadAllSampleBids}
                     disabled={isUploading}
                   >
-                    ⚡ Load All 4 Sample Vendor Bids
+                    Load All 4 Sample Vendor Bids
                   </button>
                 </div>
 
@@ -1915,7 +1915,7 @@ export default function Home() {
                     onClick={handleQuickLoadRectification}
                     disabled={isUploading}
                   >
-                    ⚡ Quick Re-evaluate GlobalCorp Rectification
+                    Quick Re-evaluate GlobalCorp Rectification
                   </button>
                 </div>
 
@@ -1923,7 +1923,7 @@ export default function Home() {
                   <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                     <p style={{ marginBottom: '12px' }}>No evaluated vendors in review yet. You can click below to immediately test the GlobalCorp clarification workflow:</p>
                     <button className="btn btn-primary" onClick={handleQuickLoadRectification} disabled={isUploading}>
-                      ⚡ Load &amp; Audit GlobalCorp Rectification Sample
+                      Load &amp; Audit GlobalCorp Rectification Sample
                     </button>
                   </div>
                 ) : (
@@ -2023,7 +2023,7 @@ export default function Home() {
                         onClick={handleQuickLoadRectification}
                         disabled={isUploading}
                       >
-                        ⚡ Load Sample Rectification (Bid_GlobalCorp_Rectified_ReEvaluation.pdf)
+                        Load Sample Rectification (Bid_GlobalCorp_Rectified_ReEvaluation.pdf)
                       </button>
                     </div>
                   </div>
