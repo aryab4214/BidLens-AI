@@ -1055,25 +1055,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* 1-Click Fast Demonstration Banner */}
-            <div className="card" style={{ padding: '16px 20px', backgroundColor: 'var(--gold-light)', border: '1.5px solid var(--gold)', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--navy)' }}>
-                  1-Click Complete Demonstration &amp; Fast Audit
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Pre-loads the 12-page Computer Tender RFP and 4 multi-format vendor proposals to run an end-to-end evaluation immediately.
-                </div>
-              </div>
-              <button
-                className="btn btn-primary"
-                style={{ fontWeight: 800, padding: '10px 22px', fontSize: '13px' }}
-                onClick={handleOneClickCompleteEvaluation}
-                disabled={isUploading}
-              >
-                {isUploading ? 'Auditing...' : '1-Click Complete Evaluation →'}
-              </button>
-            </div>
 
             {/* Step Indicator */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', marginBottom: '24px', padding: '16px', backgroundColor: '#FFFFFF', borderRadius: '10px', border: '1px solid var(--border)' }}>
