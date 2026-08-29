@@ -86,6 +86,177 @@ export default function Home() {
     }
   };
 
+  // Quick Load Pre-Packaged Tender RFP
+  const handleLoadSampleTender = async () => {
+    setIsUploading(true);
+    setStatusMessage('Loading pre-packaged Sample Computer Tender RFP...');
+    try {
+      const res = await fetch(`${BACKEND_URL}/document/tender/sample`);
+      if (!res.ok) throw new Error('Failed to load sample tender RFP');
+      const data = await res.json();
+      setTenderDocument(data.tender_data);
+      setStatusMessage('Sample Tender RFP (GEM/2026/B/892100) loaded.');
+      setTimeout(() => setStatusMessage(''), 3500);
+    } catch (err) {
+      setStatusMessage(`Error loading sample RFP: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Quick Load All Sample Vendor Bids
+  const handleLoadAllSampleBids = async () => {
+    setIsUploading(true);
+    setStatusMessage('Loading all pre-packaged sample vendor proposals...');
+    try {
+      const res = await fetch(`${BACKEND_URL}/document/sample/vendor-bids`);
+      if (!res.ok) throw new Error('Failed to load sample vendor bids');
+      const data = await res.json();
+      const sampleItems = data.vendor_bids.map((b) => ({
+        file_id: b.file_id,
+        filename: b.filename,
+        file_type: b.file_type,
+        vendor_name: b.extracted_summary?.vendor_name || b.filename,
+        quote_inr: b.extracted_summary?.total_quote_inr,
+        status: 'Ready for Audit'
+      }));
+      setAddedVendors(sampleItems);
+      setStatusMessage(`Loaded ${sampleItems.length} sample vendor proposals.`);
+      setTimeout(() => setStatusMessage(''), 3500);
+    } catch (err) {
+      setStatusMessage(`Error loading sample bids: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Quick Load Single Sample Vendor
+  const handleLoadSingleSampleVendor = async (sampleFilename) => {
+    setIsUploading(true);
+    setStatusMessage(`Loading sample file: ${sampleFilename}...`);
+    try {
+      const res = await fetch(`${BACKEND_URL}/document/sample/load/${encodeURIComponent(sampleFilename)}`, { method: 'POST' });
+      if (!res.ok) throw new Error(`Failed to load ${sampleFilename}`);
+      const data = await res.json();
+      const newVendorItem = {
+        file_id: data.file_id,
+        filename: data.filename,
+        file_type: data.file_type,
+        vendor_name: data.extracted_summary?.vendor_name || data.filename,
+        quote_inr: data.extracted_summary?.total_quote_inr,
+        status: 'Ready for Audit'
+      };
+      setAddedVendors((prev) => {
+        const filtered = prev.filter((v) => v.file_id !== data.file_id);
+        return [...filtered, newVendorItem];
+      });
+      setStatusMessage(`Loaded sample: ${newVendorItem.vendor_name}`);
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (err) {
+      setStatusMessage(`Error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // 1-Click Complete Evaluation (RFP + All 4 Bids + Audit Execution)
+  const handleOneClickCompleteEvaluation = async () => {
+    setIsUploading(true);
+    setStatusMessage('1-Click Audit: Loading RFP and all sample vendor bids...');
+    try {
+      // 1. Load Tender RFP
+      const tRes = await fetch(`${BACKEND_URL}/document/tender/sample`);
+      if (!tRes.ok) throw new Error('Failed to load sample tender RFP');
+      const tData = await tRes.json();
+      setTenderDocument(tData.tender_data);
+
+      // 2. Load Vendor Bids
+      const vRes = await fetch(`${BACKEND_URL}/document/sample/vendor-bids`);
+      if (!vRes.ok) throw new Error('Failed to load sample vendor bids');
+      const vData = await vRes.json();
+      const sampleItems = vData.vendor_bids.map((b) => ({
+        file_id: b.file_id,
+        filename: b.filename,
+        file_type: b.file_type,
+        vendor_name: b.extracted_summary?.vendor_name || b.filename,
+        quote_inr: b.extracted_summary?.total_quote_inr,
+        status: 'Ready for Audit'
+      }));
+      setAddedVendors(sampleItems);
+
+      // 3. Run Audits
+      setStatusMessage(`Auditing ${sampleItems.length} vendor bids against GFR 2017 & RFP rules...`);
+      const evaluatedBids = [];
+      for (const vendor of sampleItems) {
+        const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_id: vendor.file_id, tender_id: tData.tender_data.tender_id }),
+        });
+        if (auditRes.ok) {
+          const auditData = await auditRes.json();
+          if (auditData.results) {
+            auditData.results.file_id = vendor.file_id;
+            evaluatedBids.push(auditData.results);
+          }
+        }
+      }
+
+      if (evaluatedBids.length > 0) {
+        setBids(evaluatedBids);
+        setSelectedVendor(evaluatedBids[0]);
+        setSelectedEvidenceClause(evaluatedBids[0].clause_level_decisions ? evaluatedBids[0].clause_level_decisions[0] : null);
+        const compliantOnes = evaluatedBids.filter((b) => b?.is_compliant);
+        setShortlistedVendors(compliantOnes);
+        setStatusMessage(`1-Click Audit Complete! Evaluated ${evaluatedBids.length} vendors.`);
+        setTimeout(() => setStatusMessage(''), 3500);
+        setCurrentScreen('evaluations');
+      }
+    } catch (err) {
+      setStatusMessage(`1-Click Audit Error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Quick Load Rectification in Screen 6
+  const handleQuickLoadRectification = async () => {
+    let target = reEvalSelectedVendor;
+    if (!target) {
+      target = bids.find((b) => b?.file_info?.vendor_name?.toLowerCase().includes('globalcorp')) || bids.find((b) => !b?.is_compliant) || bids[0];
+      if (target) {
+        setReEvalSelectedVendor(target);
+        setReEvalPreviousResult(target);
+      }
+    }
+    setIsUploading(true);
+    setStatusMessage('Loading GlobalCorp Rectified Clarification Document...');
+    try {
+      const res = await fetch(`${BACKEND_URL}/document/sample/load/Bid_GlobalCorp_Rectified_ReEvaluation.pdf`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to load rectified sample file');
+      const data = await res.json();
+
+      const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_id: data.file_id, tender_id: tenderDocument?.tender_id || 'GEM/2026/B/892100' }),
+      });
+
+      if (!auditRes.ok) throw new Error('Re-evaluation audit failed');
+      const auditData = await auditRes.json();
+      if (auditData.results) {
+        auditData.results.file_id = data.file_id;
+        setReEvalResult(auditData.results);
+        setStatusMessage('Rectified clarification audited successfully! Inspect before-and-after comparison.');
+        setTimeout(() => setStatusMessage(''), 4000);
+      }
+    } catch (err) {
+      setStatusMessage(`Error: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // 2. Upload Custom Rules / Policy Document (Directly in Rules screen)
   const handleCustomRulesUpload = (file) => {
     setCustomRulesDocument({
@@ -884,6 +1055,26 @@ export default function Home() {
               </p>
             </div>
 
+            {/* 1-Click Fast Demonstration Banner */}
+            <div className="card" style={{ padding: '16px 20px', backgroundColor: 'var(--gold-light)', border: '1.5px solid var(--gold)', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--navy)' }}>
+                  ⚡ 1-Click Complete Demonstration &amp; Fast Audit
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Pre-loads the 12-page Computer Tender RFP and 4 multi-format vendor proposals to run an end-to-end evaluation immediately.
+                </div>
+              </div>
+              <button
+                className="btn btn-primary"
+                style={{ fontWeight: 800, padding: '10px 22px', fontSize: '13px' }}
+                onClick={handleOneClickCompleteEvaluation}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Auditing...' : '⚡ 1-Click Complete Evaluation →'}
+              </button>
+            </div>
+
             {/* Step Indicator */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', marginBottom: '24px', padding: '16px', backgroundColor: '#FFFFFF', borderRadius: '10px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -920,7 +1111,7 @@ export default function Home() {
             {/* Side-by-Side Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px', marginBottom: '24px' }}>
               
-              {/* Card 1: Tender RFP Document (Interactive File Upload) */}
+              {/* Card 1: Tender RFP Document (Interactive File Upload & Quick Load) */}
               <div className="card" style={{ padding: '24px', borderTop: tenderDocument ? '4px solid var(--success)' : '4px solid var(--navy)' }}>
                 <div style={{ width: '48px', height: '48px', margin: '0 auto 12px auto', borderRadius: '10px', backgroundColor: tenderDocument ? 'var(--success-bg)' : 'var(--info-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={tenderDocument ? 'var(--success)' : 'var(--info)'} strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -949,7 +1140,7 @@ export default function Home() {
                 ) : (
                   <div style={{ padding: '16px', border: '1.5px dashed var(--border)', borderRadius: '8px', textAlign: 'center', backgroundColor: '#FAFAFA', marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                      No tender RFP chosen yet. Choose your RFP file from laptop:
+                      No tender RFP chosen yet. Choose file or click quick-load:
                     </div>
                   </div>
                 )}
@@ -974,10 +1165,18 @@ export default function Home() {
                   >
                     {tenderDocument ? 'Replace Tender RFP Document' : 'Choose Tender RFP File (.PDF / Image)'}
                   </button>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ width: '100%', fontSize: '12px' }}
+                    onClick={handleLoadSampleTender}
+                    disabled={isUploading}
+                  >
+                    ⚡ Load Pre-Packaged Tender RFP (GEM/2026/B/892100)
+                  </button>
                 </div>
               </div>
 
-              {/* Card 2: Vendor Submissions (Interactive Queue) */}
+              {/* Card 2: Vendor Submissions (Interactive Queue & 1-Click Loaders) */}
               <div className="card" style={{ padding: '24px', borderTop: addedVendors.length > 0 ? '4px solid var(--success)' : '4px solid var(--navy)' }}>
                 <div style={{ width: '48px', height: '48px', margin: '0 auto 12px auto', borderRadius: '10px', backgroundColor: addedVendors.length > 0 ? 'var(--success-bg)' : 'var(--gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -985,8 +1184,8 @@ export default function Home() {
                 <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--navy)', textAlign: 'center' }}>
                   Vendor Submissions
                 </h3>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 16px 0', textAlign: 'center' }}>
-                  Select proposal files or scanned document images (PDF, Scanned JPG/PNG, Word, Excel)
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 14px 0', textAlign: 'center' }}>
+                  Select proposal files or click quick-load sample proposals
                 </p>
 
                 <input
@@ -1001,13 +1200,35 @@ export default function Home() {
                   }}
                 />
 
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginBottom: '8px' }}
-                  onClick={() => vendorFileInputRef.current && vendorFileInputRef.current.click()}
-                >
-                  + Choose Vendor Proposal / Scanned File from Laptop
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
+                    onClick={() => vendorFileInputRef.current && vendorFileInputRef.current.click()}
+                  >
+                    + Choose Vendor Proposal File from Laptop
+                  </button>
+                  <button
+                    className="btn btn-navy"
+                    style={{ width: '100%', fontSize: '12.5px', fontWeight: 700 }}
+                    onClick={handleLoadAllSampleBids}
+                    disabled={isUploading}
+                  >
+                    ⚡ Load All 4 Sample Vendor Bids
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
+                  Quick Load Individual Sample Bids:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('Bid_ApexLabs_MSME.pdf')}>+ Apex MSME (.PDF)</button>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('Bid_MegaTech_BigBrand.pdf')}>+ MegaTech (.PDF)</button>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('Bid_GlobalCorp_Ineligible.pdf')}>+ GlobalCorp Ineligible (.PDF)</button>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('BoQ_PriceSchedule_MegaTech.xlsx')}>+ MegaTech BoQ (.XLSX)</button>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('Bid_ApexLabs_Proposal.docx')}>+ Apex Proposal (.DOCX)</button>
+                  <button className="btn btn-secondary" style={{ fontSize: '11px', padding: '4px 8px' }} onClick={() => handleLoadSingleSampleVendor('Scanned_Letter_ApexLabs.png')}>+ Scanned Letter (.PNG)</button>
+                </div>
               </div>
             </div>
 
@@ -1679,7 +1900,7 @@ export default function Home() {
             {/* PHASE 1: CHOOSE A VENDOR TO RE-EVALUATE */}
             {!reEvalSelectedVendor ? (
               <div className="card" style={{ padding: '24px' }}>
-                <div className="card-header" style={{ padding: '0 0 16px 0', borderBottom: '1px solid var(--border)', marginBottom: '16px' }}>
+                <div className="card-header" style={{ padding: '0 0 16px 0', borderBottom: '1px solid var(--border)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--navy)' }}>
                       Select a Vendor for Re-evaluation ({bids.length} Vendors Under Review)
@@ -1688,11 +1909,22 @@ export default function Home() {
                       Choose which company you wish to submit updated rectification certificates or clarification for:
                     </div>
                   </div>
+                  <button
+                    className="btn btn-navy"
+                    style={{ fontSize: '12px', padding: '6px 14px' }}
+                    onClick={handleQuickLoadRectification}
+                    disabled={isUploading}
+                  >
+                    ⚡ Quick Re-evaluate GlobalCorp Rectification
+                  </button>
                 </div>
 
                 {bids.length === 0 ? (
                   <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                    No evaluated vendors in review yet. Please start an evaluation from <strong>"New Evaluation"</strong> screen first.
+                    <p style={{ marginBottom: '12px' }}>No evaluated vendors in review yet. You can click below to immediately test the GlobalCorp clarification workflow:</p>
+                    <button className="btn btn-primary" onClick={handleQuickLoadRectification} disabled={isUploading}>
+                      ⚡ Load &amp; Audit GlobalCorp Rectification Sample
+                    </button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1736,7 +1968,7 @@ export default function Home() {
                 )}
               </div>
             ) : !reEvalResult ? (
-              /* PHASE 2: UPLOAD RECTIFICATION DOCUMENT (CLEAN) */
+              /* PHASE 2: UPLOAD RECTIFICATION DOCUMENT (CLEAN & QUICK LOAD) */
               <div>
                 <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
@@ -1778,12 +2010,20 @@ export default function Home() {
                       }}
                     />
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '420px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '440px', margin: '0 auto' }}>
                       <button
                         className="btn btn-primary"
                         onClick={() => reEvalFileInputRef.current && reEvalFileInputRef.current.click()}
                       >
                         Choose Rectification File from Laptop
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px' }}
+                        onClick={handleQuickLoadRectification}
+                        disabled={isUploading}
+                      >
+                        ⚡ Load Sample Rectification (Bid_GlobalCorp_Rectified_ReEvaluation.pdf)
                       </button>
                     </div>
                   </div>
