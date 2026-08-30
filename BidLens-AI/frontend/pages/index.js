@@ -1189,14 +1189,6 @@ export default function Home() {
                   >
                     + Choose Vendor Proposal File from Laptop
                   </button>
-                  <button
-                    className="btn btn-navy"
-                    style={{ width: '100%', fontSize: '12.5px', fontWeight: 700 }}
-                    onClick={handleLoadAllSampleBids}
-                    disabled={isUploading}
-                  >
-                    Load All 4 Sample Vendor Bids
-                  </button>
                 </div>
 
                 <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
