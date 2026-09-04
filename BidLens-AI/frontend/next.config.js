@@ -16,6 +16,10 @@ const nextConfig = {
         source: '/review/:path*',
         destination: `${backendUrl}/review/:path*`,
       },
+      {
+        source: '/system/:path*',
+        destination: `${backendUrl}/system/:path*`,
+      },
     ];
   },
 };

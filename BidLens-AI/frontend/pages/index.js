@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+const getBackendUrl = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('bidlens_backend_url');
+    if (saved && saved.trim()) return saved.trim().replace(/\/+$/, '');
+  }
+  return (process.env.NEXT_PUBLIC_BACKEND_URL || '').trim().replace(/\/+$/, '');
+};
 
 export default function Home() {
   // Navigation State
@@ -40,6 +46,10 @@ export default function Home() {
   const [officerDesignation, setOfficerDesignation] = useState('');
   const [pendingPdfDownloadBidId, setPendingPdfDownloadBidId] = useState(null);
   const [settingsNotice, setSettingsNotice] = useState('');
+  const [customBackendUrl, setCustomBackendUrl] = useState('');
+  const [backendStatus, setBackendStatus] = useState('checking'); // 'online', 'offline', 'checking'
+  const [backendLatency, setBackendLatency] = useState(null);
+  const [isTestingBackend, setIsTestingBackend] = useState(false);
 
   // File input refs
   const tenderFileInputRef = useRef(null);
@@ -57,22 +67,65 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const checkBackendHealth = async (overrideUrl) => {
+    const targetBase = overrideUrl !== undefined ? overrideUrl.trim().replace(/\/+$/, '') : getBackendUrl();
+    setBackendStatus('checking');
+    setIsTestingBackend(true);
+    const startTime = Date.now();
+    try {
+      const target = targetBase ? `${targetBase}/system/health` : '/system/health';
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(target, { signal: controller.signal });
+      clearTimeout(id);
+      if (res.ok) {
+        setBackendStatus('online');
+        setBackendLatency(Date.now() - startTime);
+        return true;
+      } else {
+        setBackendStatus('offline');
+        return false;
+      }
+    } catch (e) {
+      setBackendStatus('offline');
+      return false;
+    } finally {
+      setIsTestingBackend(false);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bidlens_backend_url') || '';
+      setCustomBackendUrl(saved);
+    }
+    checkBackendHealth();
+  }, []);
+
   // 1. Handle Tender RFP Upload from laptop
   const handleTenderUpload = async (file) => {
     setIsUploading(true);
-    setStatusMessage(`Uploading and parsing Tender RFP: ${file.name}...`);
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    setStatusMessage(`Uploading and parsing Tender RFP: ${file.name} (${sizeMb} MB)...`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch(`${BACKEND_URL}/document/tender/upload`, {
+      const apiUrl = getBackendUrl();
+      const res = await fetch(`${apiUrl}/document/tender/upload`, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.detail || `Tender upload failed (${res.status})`);
+        throw new Error(errJson.detail || `Upload failed (${res.status})`);
       }
 
       const data = await res.json();
@@ -80,7 +133,12 @@ export default function Home() {
       setStatusMessage(`Tender RFP '${file.name}' verified.`);
       setTimeout(() => setStatusMessage(''), 3500);
     } catch (err) {
-      setStatusMessage(`Error: ${err.message}`);
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setStatusMessage('Error: Upload timed out (60s). Cloud server may still be waking up. Please retry.');
+      } else {
+        setStatusMessage(`Error: ${err.message}`);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -91,7 +149,7 @@ export default function Home() {
     setIsUploading(true);
     setStatusMessage('Loading pre-packaged Sample Computer Tender RFP...');
     try {
-      const res = await fetch(`${BACKEND_URL}/document/tender/sample`);
+      const res = await fetch(`${getBackendUrl()}/document/tender/sample`);
       if (!res.ok) throw new Error('Failed to load sample tender RFP');
       const data = await res.json();
       setTenderDocument(data.tender_data);
@@ -109,7 +167,7 @@ export default function Home() {
     setIsUploading(true);
     setStatusMessage('Loading all pre-packaged sample vendor proposals...');
     try {
-      const res = await fetch(`${BACKEND_URL}/document/sample/vendor-bids`);
+      const res = await fetch(`${getBackendUrl()}/document/sample/vendor-bids`);
       if (!res.ok) throw new Error('Failed to load sample vendor bids');
       const data = await res.json();
       const sampleItems = data.vendor_bids.map((b) => ({
@@ -135,7 +193,7 @@ export default function Home() {
     setIsUploading(true);
     setStatusMessage(`Loading sample file: ${sampleFilename}...`);
     try {
-      const res = await fetch(`${BACKEND_URL}/document/sample/load/${encodeURIComponent(sampleFilename)}`, { method: 'POST' });
+      const res = await fetch(`${getBackendUrl()}/document/sample/load/${encodeURIComponent(sampleFilename)}`, { method: 'POST' });
       if (!res.ok) throw new Error(`Failed to load ${sampleFilename}`);
       const data = await res.json();
       const newVendorItem = {
@@ -165,13 +223,13 @@ export default function Home() {
     setStatusMessage('1-Click Audit: Loading RFP and all sample vendor bids...');
     try {
       // 1. Load Tender RFP
-      const tRes = await fetch(`${BACKEND_URL}/document/tender/sample`);
+      const tRes = await fetch(`${getBackendUrl()}/document/tender/sample`);
       if (!tRes.ok) throw new Error('Failed to load sample tender RFP');
       const tData = await tRes.json();
       setTenderDocument(tData.tender_data);
 
       // 2. Load Vendor Bids
-      const vRes = await fetch(`${BACKEND_URL}/document/sample/vendor-bids`);
+      const vRes = await fetch(`${getBackendUrl()}/document/sample/vendor-bids`);
       if (!vRes.ok) throw new Error('Failed to load sample vendor bids');
       const vData = await vRes.json();
       const sampleItems = vData.vendor_bids.map((b) => ({
@@ -188,7 +246,7 @@ export default function Home() {
       setStatusMessage(`Auditing ${sampleItems.length} vendor bids against GFR 2017 & RFP rules...`);
       const evaluatedBids = [];
       for (const vendor of sampleItems) {
-        const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+        const auditRes = await fetch(`${getBackendUrl()}/audit/run`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ file_id: vendor.file_id, tender_id: tData.tender_data.tender_id }),
@@ -232,11 +290,11 @@ export default function Home() {
     setIsUploading(true);
     setStatusMessage('Loading GlobalCorp Rectified Clarification Document...');
     try {
-      const res = await fetch(`${BACKEND_URL}/document/sample/load/Bid_GlobalCorp_Rectified_ReEvaluation.pdf`, { method: 'POST' });
+      const res = await fetch(`${getBackendUrl()}/document/sample/load/Bid_GlobalCorp_Rectified_ReEvaluation.pdf`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to load rectified sample file');
       const data = await res.json();
 
-      const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+      const auditRes = await fetch(`${getBackendUrl()}/audit/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_id: data.file_id, tender_id: tenderDocument?.tender_id || 'GEM/2026/B/892100' }),
@@ -277,15 +335,23 @@ export default function Home() {
   // 3. Add a vendor proposal file from laptop to queue
   const handleAddVendorFile = async (file) => {
     setIsUploading(true);
-    setStatusMessage(`Uploading vendor proposal: ${file.name}...`);
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    setStatusMessage(`Uploading vendor proposal: ${file.name} (${sizeMb} MB)...`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch(`${BACKEND_URL}/document/upload`, {
+      const apiUrl = getBackendUrl();
+      const res = await fetch(`${apiUrl}/document/upload`, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -310,7 +376,12 @@ export default function Home() {
       setStatusMessage(`Added vendor: ${newVendorItem.vendor_name}`);
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (err) {
-      setStatusMessage(`Error: ${err.message}`);
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setStatusMessage('Error: Upload timed out (60s). Please retry or check backend connection.');
+      } else {
+        setStatusMessage(`Error: ${err.message}`);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -337,7 +408,7 @@ export default function Home() {
     try {
       const evaluatedBids = [];
       for (const vendor of addedVendors) {
-        const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+        const auditRes = await fetch(`${getBackendUrl()}/audit/run`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ file_id: vendor.file_id, tender_id: tenderDocument.tender_id }),
@@ -386,7 +457,7 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/audit/clause-override`, {
+      const res = await fetch(`${getBackendUrl()}/audit/clause-override`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -460,7 +531,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const upRes = await fetch(`${BACKEND_URL}/document/upload`, {
+      const upRes = await fetch(`${getBackendUrl()}/document/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -469,7 +540,7 @@ export default function Home() {
       const upData = await upRes.json();
       const fileId = upData.file_id;
 
-      const auditRes = await fetch(`${BACKEND_URL}/audit/run`, {
+      const auditRes = await fetch(`${getBackendUrl()}/audit/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_id: fileId, tender_id: tenderDocument?.tender_id || 'GEM/2026/B/892100' }),
@@ -508,7 +579,7 @@ export default function Home() {
       setSettingsNotice('Please enter your Officer Full Name and Designation in Officer Profile before generating the official PDF dossier.');
       setCurrentScreen('settings');
     } else {
-      const url = `${BACKEND_URL}/audit/report/pdf/${bidId}?officer_name=${encodeURIComponent(officerName)}&officer_designation=${encodeURIComponent(officerDesignation)}`;
+      const url = `${getBackendUrl()}/audit/report/pdf/${bidId}?officer_name=${encodeURIComponent(officerName)}&officer_designation=${encodeURIComponent(officerDesignation)}`;
       window.open(url, '_blank');
     }
   };
@@ -525,7 +596,7 @@ export default function Home() {
     alert('Officer credentials saved successfully! Official PDF dossiers will be generated with manual physical sign-off boxes.');
     setSettingsNotice('');
     if (pendingPdfDownloadBidId) {
-      const url = `${BACKEND_URL}/audit/report/pdf/${pendingPdfDownloadBidId}?officer_name=${encodeURIComponent(officerName)}&officer_designation=${encodeURIComponent(officerDesignation)}`;
+      const url = `${getBackendUrl()}/audit/report/pdf/${pendingPdfDownloadBidId}?officer_name=${encodeURIComponent(officerName)}&officer_designation=${encodeURIComponent(officerDesignation)}`;
       window.open(url, '_blank');
       setPendingPdfDownloadBidId(null);
     }
@@ -863,6 +934,28 @@ export default function Home() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Backend Connectivity Status Pill */}
+            <button
+              onClick={() => setCurrentScreen('settings')}
+              title="Click to view/change Cloud Backend API Server settings"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                backgroundColor: backendStatus === 'online' ? 'var(--success-bg)' : backendStatus === 'checking' ? 'var(--warning-bg)' : 'var(--critical-bg)',
+                border: `1px solid ${backendStatus === 'online' ? 'var(--success-border)' : backendStatus === 'checking' ? 'var(--warning-border)' : 'var(--critical-border)'}`,
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: backendStatus === 'online' ? '#14532D' : backendStatus === 'checking' ? '#92400E' : 'var(--critical)',
+              }}
+            >
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: backendStatus === 'online' ? 'var(--success)' : backendStatus === 'checking' ? 'var(--gold)' : 'var(--critical)' }}></span>
+              {backendStatus === 'online' ? `Backend: Online (${backendLatency !== null ? `${backendLatency}ms` : 'Ready'})` : backendStatus === 'checking' ? 'Connecting Backend...' : 'Backend: Offline (Click to configure)'}
+            </button>
+
             {statusMessage && (
               <span style={{ fontSize: '12px', color: 'var(--navy)', fontWeight: 600, padding: '6px 12px', backgroundColor: 'var(--bg-sand)', borderRadius: '6px' }}>
                 {statusMessage}
@@ -2481,6 +2574,83 @@ export default function Home() {
               <button className="btn btn-primary" onClick={handleSaveOfficerSettings}>
                 {pendingPdfDownloadBidId ? 'Save & Download Audit PDF' : 'Save Officer Profile'}
               </button>
+            </div>
+
+            {/* Cloud Backend Server & Infrastructure Settings */}
+            <div className="card" style={{ padding: '24px', maxWidth: '640px', marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--navy)' }}>
+                    Cloud Backend &amp; API Connectivity
+                  </h3>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                    Direct browser-to-backend connection bypasses Vercel proxy limits (4.5 MB body limit and 10s timeouts).
+                  </div>
+                </div>
+                <span className={`badge ${backendStatus === 'online' ? 'badge-pass' : backendStatus === 'checking' ? 'badge-exempt' : 'badge-fail'}`}>
+                  {backendStatus === 'online' ? `Online (${backendLatency || '35'}ms)` : backendStatus === 'checking' ? 'Connecting...' : 'Offline / Asleep'}
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--navy)', marginBottom: '6px' }}>
+                  Direct Backend API URL (Render / Tunnel / Localhost):
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. https://your-backend.onrender.com or leave blank for default"
+                    value={customBackendUrl}
+                    onChange={(e) => setCustomBackendUrl(e.target.value)}
+                    style={{ flex: 1, padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '12.5px' }}
+                  />
+                  <button
+                    className="btn btn-navy"
+                    style={{ fontSize: '12px', padding: '8px 14px', whiteSpace: 'nowrap' }}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        if (customBackendUrl.trim()) {
+                          localStorage.setItem('bidlens_backend_url', customBackendUrl.trim().replace(/\/+$/, ''));
+                        } else {
+                          localStorage.removeItem('bidlens_backend_url');
+                        }
+                        checkBackendHealth(customBackendUrl.trim());
+                        setSettingsNotice('Backend connection settings saved.');
+                        setTimeout(() => setSettingsNotice(''), 3000);
+                      }
+                    }}
+                  >
+                    Save &amp; Connect
+                  </button>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  Active Endpoint: <code>{getBackendUrl() || 'Vercel Relative Proxy'}</code>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: '11.5px', padding: '6px 12px' }}
+                  onClick={() => checkBackendHealth(customBackendUrl)}
+                  disabled={isTestingBackend}
+                >
+                  {isTestingBackend ? 'Testing Connection...' : 'Ping / Wake Up Server'}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: '11.5px', padding: '6px 12px' }}
+                  onClick={() => {
+                    setCustomBackendUrl('');
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('bidlens_backend_url');
+                      checkBackendHealth('');
+                    }
+                  }}
+                >
+                  Reset to Default
+                </button>
+              </div>
             </div>
           </div>
         )}
