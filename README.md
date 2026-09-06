@@ -205,7 +205,7 @@ Open your browser and navigate to:
 Developed for **Smart India Hackathon (SIH) 2026** by Team HexaCore (CSE Department).
 
 * **Person 1:** API Gateway & Document Router, Data Models, Security & Anti-Tampering, Officer Review Portal.
-* **Person 2:** Central Audit Orchestrator, AI/OCR Extraction Pipeline, GFR 2017 Rule Engine, Contradiction Detector & Knowledge Graph.
+* **Person 2:** Central Audit Orchestrator, AI/OCR Extraction Pipeline, GFR 2017 Rule Engine, Contradiction Detector & Knowledge Graph..
 
 ---
 
