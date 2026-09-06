@@ -88,121 +88,248 @@ BidLens AI utilizes a validated **6-Layer Architecture** to guarantee determinis
 
 ```
 BidLens-AI/
-├── backend/
-│   ├── evidence_risk/           # Layer 4: Evidence & Risk Engine
-│   │   ├── contradiction.py     # Cross-document inconsistency detection
-│   │   ├── graph_engine.py      # NetworkX Clause-to-Evidence Knowledge Graph
-│   │   └── risk_scorer.py       # Explainable risk calculation & reporting
-│   ├── models/                  # Pydantic Schemas & Data Contracts
-│   │   └── schemas.py           # Request/response validation models
-│   ├── orchestrator/            # Layer 3: Multi-Branch Verification
-│   │   ├── ai_processing.py     # OCR (EasyOCR/PyMuPDF) + spaCy NER + LLM
-│   │   ├── govt_verify.py       # Live GSTN & MCA21 verification APIs
-│   │   ├── orchestrator.py      # Asynchronous multi-branch dispatcher
-│   │   └── rule_engine.py       # Deterministic GFR 2017 & MSME rules
-│   ├── routers/                 # Layer 2: API Endpoints
-│   │   ├── audit.py             # Audit execution and status endpoints
-│   │   ├── document.py          # Document upload, storage & hashing
-│   │   └── review.py            # Officer review and decision logging
-│   ├── security/                # Anti-tamper & Input sanitization
-│   │   └── sha256_audit.py      # SHA-256 fingerprinting & prompt guard
-│   ├── utils/                   # Shared utility modules
-│   ├── .env.example             # Template for API keys & database URLs
-│   ├── main.py                  # FastAPI application entry point
-│   └── requirements.txt         # Python dependencies
-├── .gitignore
-├── LICENSE                      # MIT License
-└── README.md
+├── BidLens-AI/                          # Core Application Root
+│   ├── backend/                         # Layer 2-4: FastAPI Sovereign Backend
+│   │   ├── evidence_risk/               # Layer 4: Evidence & Risk Engine
+│   │   │   ├── contradiction.py         # Cross-document discrepancy detector
+│   │   │   ├── graph_engine.py          # NetworkX Clause-to-Evidence Knowledge Graph
+│   │   │   └── risk_scorer.py           # Explainable rejection risk scorer
+│   │   ├── models/                      # Pydantic Schemas & Data Contracts
+│   │   │   └── schemas.py               # API request/response models
+│   │   ├── orchestrator/                # Layer 3: Central Audit Orchestrator
+│   │   │   ├── ai_processing.py         # PyMuPDF + RapidOCR + NLP entity extraction
+│   │   │   ├── govt_verify.py           # Simulated GSTN & MCA21 verification
+│   │   │   ├── orchestrator.py          # Parallel 3-branch async dispatcher
+│   │   │   └── rule_engine.py           # Deterministic GFR 2017 & MSME rules
+│   │   ├── routers/                     # Layer 2: API Endpoints
+│   │   │   ├── audit.py                 # Audit initiation & status polling
+│   │   │   ├── document.py              # PDF upload, listing & SHA-256 fingerprinting
+│   │   │   └── review.py                # Officer review & decision logging
+│   │   ├── security/                    # Security & Air-Gapped Engine
+│   │   │   ├── offline_mode.py          # Sovereign system health & air-gap monitor
+│   │   │   └── sha256_audit.py          # Cryptographic hashing & prompt sanitizer
+│   │   ├── utils/                       # Utilities & PDF generators
+│   │   │   └── pdf_generator.py         # ReportLab official audit report generator
+│   │   ├── uploaded_docs/               # Local repository for uploaded tender PDFs
+│   │   ├── generated_reports/           # Generated official audit PDF dossiers
+│   │   ├── generate_comprehensive_samples.py # Script generating test bid packages
+│   │   ├── main.py                      # FastAPI entry point (Port 8000)
+│   │   ├── requirements.txt             # Python dependencies
+│   │   └── .env.example                 # Environment configuration template
+│   ├── frontend/                        # Layer 1: Next.js Officer Web Portal
+│   │   ├── pages/                       # Next.js Pages router
+│   │   │   ├── _app.js                  # Application wrapper & theme
+│   │   │   └── index.js                 # Officer dashboard & audit interface
+│   │   ├── public/                      # Static assets & Government of India logo
+│   │   ├── styles/                      # TailwindCSS & custom styles
+│   │   ├── package.json                 # Node.js dependencies & scripts
+│   │   └── next.config.js               # Next.js configuration
+│   ├── data/
+│   │   └── sample_bids/                 # 8 Pre-loaded Tender & Vendor Bids
+│   │       ├── Tender_RFP_GeM_Computers.pdf      # Official GeM Tender RFP
+│   │       ├── Bid_ApexLabs_MSME.pdf             # MSME vendor (Qualifies with waiver)
+│   │       ├── Bid_ApexLabs_Proposal.docx        # Technical proposal document
+│   │       ├── Scanned_Letter_ApexLabs.png       # Scanned/stamped authorization letter
+│   │       ├── Bid_MegaTech_BigBrand.pdf         # Large enterprise bid
+│   │       ├── BoQ_PriceSchedule_MegaTech.xlsx   # Financial Bill of Quantities (BoQ)
+│   │       ├── Bid_GlobalCorp_Ineligible.pdf     # Ineligible bid (PAN/GSTIN mismatch)
+│   │       └── Bid_GlobalCorp_Rectified_ReEvaluation.pdf # Re-evaluated rectified bid
+│   ├── Start_BidLens.bat                # 1-Click launcher for both servers
+│   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
+│   └── run_live_tunnel.ps1              # PowerShell live tunnel script
+├── Start_BidLens.bat                    # Root 1-Click full-stack launcher
+├── LICENSE                              # MIT License
+└── README.md                            # Documentation
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Backend Framework:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+) with Uvicorn ASGI
-* **Document Extraction:** [PyMuPDF](https://pymupdf.readthedocs.io/) (fitz), [pdfplumber](https://github.com/jsvine/pdfplumber), [EasyOCR](https://github.com/JaidedAI/EasyOCR)
-* **NLP & Information Extraction:** [spaCy](https://spacy.io/) (`en_core_web_sm`), RegEx Rule Matchers
-* **LLM Engine (Pluggable):** Google Gemini API / Groq API / Ollama (Mistral-7B / Llama 3)
-* **Knowledge Graph:** [NetworkX](https://networkx.org/) (Graph modeling & JSON export for visualization)
-* **Security & Verification:** SHA-256 Cryptographic Hashes, Prompt Injection Sanitizers, Input Boundaries
-* **Database & Storage:** PostgreSQL + `pgvector` (Vector search), Local Object Storage
-* **Frontend (In Progress):** Next.js (React 19), TailwindCSS, Lucide Icons
+* **Frontend:** [Next.js 14](https://nextjs.org/) + [React 18](https://react.dev/) + CSS3 (Official Government of India styling)
+* **Backend Framework:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+) with [Uvicorn](https://www.uvicorn.org/) ASGI
+* **Document Extraction:** [PyMuPDF](https://pymupdf.readthedocs.io/) (digital PDFs), [RapidOCR](https://github.com/RapidAI/RapidOCR) (on-device OCR for scanned letters), [python-docx](https://python-docx.readthedocs.io/), [openpyxl](https://openpyxl.readthedocs.io/) (Excel BoQ)
+* **Rule Engine & Graphs:** Deterministic GFR 2017 Rules (Rules 149, 160, 170), [NetworkX](https://networkx.org/) Knowledge Graph
+* **Dossier Generation:** [ReportLab](https://www.reportlab.com/) (Official signed audit reports)
+* **Security & Verification:** SHA-256 cryptographic hashing, prompt-injection defense, 5-portal registry sync (GSTN, PAN, MCA21, Udyam, CPPP)
+* **Deployment Modes:** 100% Air-Gapped / On-Premise / NIC MeghRaj Cloud compatible
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 How to Turn On Backend & Frontend
 
-### Prerequisites
-* Python 3.10 or higher
-* Git
-* (Optional) Node.js 18+ for frontend development
+You can run BidLens AI in **three different ways**, depending on your environment and preference.
 
-### 1. Clone the Repository
+### 🌟 Method 1: 1-Click Launch (Recommended for Windows)
+
+The easiest way to start both servers simultaneously:
+
+1. Navigate to the repository directory.
+2. Double-click **`Start_BidLens.bat`** (or open terminal and type `.\Start_BidLens.bat`).
+3. This automatically launches two dedicated terminal windows:
+   - 🟢 **Window 1:** FastAPI Backend on `http://localhost:8000`
+   - 🔵 **Window 2:** Next.js Frontend on `http://localhost:3000`
+
+---
+
+### 💻 Method 2: Step-by-Step Manual Launch (Windows, macOS, Linux)
+
+If you prefer running the servers manually or are working on Linux/macOS:
+
+#### Step 1: Start the Backend (Terminal 1)
+
 ```bash
-git clone https://github.com/aryab4214/BidLens-AI.git
-cd BidLens-AI
-```
+# 1. Navigate to the backend directory
+cd BidLens-AI/backend
 
-### 2. Configure Backend Environment
-```bash
-cd backend
-cp .env.example .env
-```
-Edit `.env` to supply your desired LLM key (e.g., `GEMINI_API_KEY`, `GROQ_API_KEY`, or leave default for local `OLLAMA_BASE_URL`).
-
-### 3. Install Dependencies
-```bash
-# Recommended: create a virtual environment
+# 2. (Optional but recommended) Create & activate a virtual environment
 python -m venv venv
 
-# Windows
+# Windows:
 .\venv\Scripts\activate
-
-# macOS / Linux
+# macOS / Linux:
 source venv/bin/activate
 
-# Install requirements
+# 3. Install Python dependencies
 pip install -r requirements.txt
-```
 
-### 4. Run the Backend Server
+# 4. Copy environment configuration
+cp .env.example .env
+
+# 5. Start the FastAPI backend server
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+> ✅ **Backend Status:** Live at **`http://localhost:8000`**  
+> 📖 **API Docs (Swagger UI):** **`http://localhost:8000/docs`**  
+> 🩺 **System Health Check:** **`http://localhost:8000/system/health`**
+
+#### Step 2: Start the Frontend (Terminal 2)
+
+Open a **new** terminal tab or window:
+
 ```bash
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
-```
-The API will be accessible at `http://127.0.0.1:8000`.
+# 1. Navigate to the frontend directory
+cd BidLens-AI/frontend
 
-### 5. Explore Interactive API Docs
-Open your browser and navigate to:
-* **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-* **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+# 2. Install Node.js dependencies
+npm install
+
+# 3. Start the Next.js development server
+npm run dev
+```
+> 🌐 **Frontend UI:** Open your browser at **`http://localhost:3000`**
+
+---
+
+### 🌍 Method 3: Live Public Sharing Mode (For Hackathon Judges & Demos)
+
+To share the running portal with judges or view it on a mobile phone / another laptop over the internet:
+
+1. Make sure both Backend and Frontend dependencies are installed.
+2. Run the tunnel batch script:
+   ```bash
+   cd BidLens-AI
+   .\run_live_tunnel.bat
+   ```
+   *(Or using PowerShell: `.\run_live_tunnel.ps1`)*
+3. The script launches the backend, starts the frontend, and generates a secure public HTTPS URL via `localtunnel` (e.g., `https://xxxx.loca.lt`).
+4. Share that link with the judges to let them interact with the portal live!
+
+---
+
+### 🛡️ Method 4: 100% Air-Gapped / Offline Edge Verification
+
+BidLens AI is designed to function completely offline without internet connectivity. To verify sovereign offline readiness:
+
+1. Disconnect your machine from Wi-Fi / Ethernet.
+2. Start the servers using **Method 1** or **Method 2**.
+3. Visit **`http://localhost:8000/system/health`** in your browser.
+4. You will observe:
+   - `mode`: `"100% SOVEREIGN_OFFLINE_EDGE"`
+   - `data_consumption_kb`: `0.0`
+   - `cloud_data_retention`: `"DISABLED (AIR-GAPPED COMPATIBLE)"`
+   - `security_integrity`: SHA-256 fingerprinting active and prompt sanitizer enabled.
+
+---
+
+## 🧪 Testing with Pre-Loaded Sample Bids
+
+The platform includes 8 authentic tender and vendor documents in `BidLens-AI/data/sample_bids/`:
+
+| File Name | Description | Expected Test Outcome |
+| :--- | :--- | :--- |
+| `Tender_RFP_GeM_Computers.pdf` | Master RFP tender document | Establishes procurement requirements & GFR criteria |
+| `Bid_ApexLabs_MSME.pdf` | Small MSME enterprise bid | **PASS (Exempted):** Turnover waived under MSME Order 2012 |
+| `Bid_MegaTech_BigBrand.pdf` | Major OEM vendor proposal | **PASS:** Fully compliant with all turnover & EMD thresholds |
+| `BoQ_PriceSchedule_MegaTech.xlsx` | Excel Bill of Quantities | Ingested by `openpyxl` table parser |
+| `Scanned_Letter_ApexLabs.png` | Stamped authorization letter | Ingested by `RapidOCR` on-device deep learning OCR |
+| `Bid_GlobalCorp_Ineligible.pdf` | Non-compliant bid | **CRITICAL RISK / FAIL:** PAN/GSTIN mismatch & expired validity |
+| `Bid_GlobalCorp_Rectified_ReEvaluation.pdf` | Corrected re-submission | **PASS:** Used to demonstrate instant bid re-verification |
+
+**How to Test in the UI:**
+1. Open `http://localhost:3000`.
+2. Click on the 1-Click Sample Vendor buttons (ApexLabs, MegaTech, or GlobalCorp) or drag-and-drop any PDF from `BidLens-AI/data/sample_bids/`.
+3. Click **"Run Full Audit"** to witness parallel OCR, GFR rule checking, cross-document contradiction detection, and knowledge graph mapping in real time.
 
 ---
 
 ## 📡 Core API Endpoints
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/document/upload` | Upload bid PDF; generates unique `file_id` and SHA-256 fingerprint |
-| `GET` | `/document/list` | List all uploaded documents in the repository |
-| `POST` | `/audit/run` | Queue an asynchronous 3-branch audit on an uploaded bid |
-| `GET` | `/audit/status/{audit_id}` | Check processing state and retrieval status of an audit |
-| `POST` | `/review/decision` | Submit officer review action (`APPROVE`, `REJECT`, `CLARIFY`) |
-| `GET` | `/review/log/{audit_id}` | Retrieve complete, immutable audit trail for a bid |
+| Method | Endpoint | Group | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | System | Root status and API documentation URL |
+| `GET` | `/system/health` | System | Sovereign edge metrics, memory footprint & air-gap integrity |
+| `POST` | `/document/upload` | Document | Ingest PDF, compute SHA-256 fingerprint, and stage for audit |
+| `GET` | `/document/list` | Document | List all ingested documents in the local repository |
+| `POST` | `/audit/run` | Audit | Queue an asynchronous 3-branch audit on an uploaded bid |
+| `GET` | `/audit/status/{audit_id}` | Audit | Check progress, risk score, and contradiction results |
+| `POST` | `/review/decision` | Review | Submit procurement officer action (`APPROVE`, `REJECT`, `CLARIFY`) |
+| `GET` | `/review/log/{audit_id}` | Review | Fetch immutable audit trail with officer ID and timestamps |
+
+---
+
+## 🔧 Troubleshooting & FAQ
+
+### Port 8000 or Port 3000 Already in Use
+If another application is using port 8000 or 3000, you can free them via Windows Command Prompt:
+```cmd
+# Check process on port 8000
+netstat -ano | findstr :8000
+# Kill process by PID
+taskkill /PID <PID_NUMBER> /F
+
+# Check process on port 3000
+netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F
+```
+
+### Missing Python Packages
+Make sure you are running Python 3.10+ and have installed all requirements:
+```bash
+pip install -r BidLens-AI/backend/requirements.txt
+```
+
+### Node.js / NPM Issues
+Verify Node.js version (v18 or higher recommended):
+```bash
+node -v
+npm -v
+```
 
 ---
 
 ## 🛡️ Security & Compliance Standards
 
-1. **Anti-Tampering Fingerprint:** Every uploaded document is hashed with SHA-256 upon reception. The hash is compared before downstream processing to prevent in-flight modification.
-2. **Prompt Injection Sanitization:** Prior to LLM analysis, documents pass through an injection filter scrubbing jailbreak patterns (`ignore previous instructions`, `system prompt:`) and are strictly wrapped inside `<UNTRUSTED_DOCUMENT>` boundaries.
+1. **Anti-Tampering Fingerprint:** Every uploaded document is hashed with SHA-256 upon reception. The hash is verified before downstream processing to prevent in-flight file modification.
+2. **Prompt Injection Defense:** Before any LLM processing, documents pass through an injection filter scrubbing jailbreak strings (`ignore previous instructions`, `system prompt:`) and are strictly wrapped inside `<UNTRUSTED_DOCUMENT>` XML boundaries.
 3. **Statutory Non-Hallucination:** Crucial procurement statutes (GFR Rules 149, 160, 170) are processed through deterministic Python functions rather than generative models.
-4. **Immutable Decision Trail:** All procurement officer approvals, rejections, and justifications are permanently recorded with timestamp and officer ID.
+4. **Immutable Decision Trail:** All procurement officer approvals, rejections, and justifications are permanently recorded in `audit_decision_trail.json` with timestamp and officer ID.
 
 ---
 
-## 👥 Team HexaCore
+## 👥 Team Hexagon
 
-Developed for **Smart India Hackathon (SIH) 2026** by Team HexaCore (CSE Department).
+Developed for **Smart India Hackathon (SIH) 2026** by **Team Hexagon** (Team ID: **SIH26009**).
 
 * **Person 1:** API Gateway & Document Router, Data Models, Security & Anti-Tampering, Officer Review Portal.
 * **Person 2:** Central Audit Orchestrator, AI/OCR Extraction Pipeline, GFR 2017 Rule Engine, Contradiction Detector & Knowledge Graph..
@@ -212,4 +339,3 @@ Developed for **Smart India Hackathon (SIH) 2026** by Team HexaCore (CSE Departm
 ## 📄 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
->>>>>>> Stashed changes
