@@ -67,7 +67,7 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const checkBackendHealth = async (overrideUrl) => {
+  const checkBackendHealth = async (overrideUrl, isRetry = false) => {
     const targetBase = overrideUrl !== undefined ? overrideUrl.trim().replace(/\/+$/, '') : getBackendUrl();
     setBackendStatus('checking');
     setIsTestingBackend(true);
@@ -75,7 +75,8 @@ export default function Home() {
     try {
       const target = targetBase ? `${targetBase}/system/health` : '/system/health';
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 12000);
+      // Render free tier can take up to 45 seconds to wake up from sleep
+      const id = setTimeout(() => controller.abort(), 45000);
       const res = await fetch(target, { signal: controller.signal });
       clearTimeout(id);
       if (res.ok) {
@@ -83,10 +84,20 @@ export default function Home() {
         setBackendLatency(Date.now() - startTime);
         return true;
       } else {
+        if (!isRetry && targetBase) {
+          // Retry once after 3 seconds in case server was spinning up
+          setTimeout(() => checkBackendHealth(overrideUrl, true), 3000);
+          return false;
+        }
         setBackendStatus('offline');
         return false;
       }
     } catch (e) {
+      if (!isRetry && targetBase) {
+        // Retry once after 3 seconds in case server was spinning up
+        setTimeout(() => checkBackendHealth(overrideUrl, true), 3000);
+        return false;
+      }
       setBackendStatus('offline');
       return false;
     } finally {
@@ -953,7 +964,7 @@ export default function Home() {
               }}
             >
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: backendStatus === 'online' ? 'var(--success)' : backendStatus === 'checking' ? 'var(--gold)' : 'var(--critical)' }}></span>
-              {backendStatus === 'online' ? `Backend: Online (${backendLatency !== null ? `${backendLatency}ms` : 'Ready'})` : backendStatus === 'checking' ? 'Connecting Backend...' : 'Backend: Offline (Click to configure)'}
+              {backendStatus === 'online' ? `Backend: Online (${backendLatency !== null ? `${backendLatency}ms` : 'Ready'})` : backendStatus === 'checking' ? 'Connecting / Waking Cloud Backend...' : 'Backend: Offline (Click to Link Render)'}
             </button>
 
             {statusMessage && (
