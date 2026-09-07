@@ -71,6 +71,10 @@ async def trigger_audit(payload: RunAuditPayload):
             detail=f"Document '{file_id}' not found in uploaded_docs or sample_bids."
         )
 
+    # Clean fresh run: reset previous test overrides for this file unless explicitly retained
+    if audit_id in AUDIT_OVERRIDES and payload.tender_id != "KEEP_OVERRIDES":
+        AUDIT_OVERRIDES.pop(audit_id, None)
+
     audit_results = await run_full_audit(target_file)
     audit_id = file_id
     AUDIT_CACHE[audit_id] = audit_results
@@ -90,6 +94,25 @@ async def trigger_audit(payload: RunAuditPayload):
         "pdf_download_url": f"/audit/report/pdf/{audit_id}",
         "results": audit_results
     }
+
+
+@router.post("/overrides/clear")
+def clear_all_overrides():
+    """
+    Clears all recorded officer overrides across all vendor bids for a clean slate.
+    """
+    AUDIT_OVERRIDES.clear()
+    return {"status": "SUCCESS", "message": "All test overrides have been completely cleared."}
+
+
+@router.post("/overrides/reset/{bid_id}")
+def reset_vendor_overrides(bid_id: str):
+    """
+    Clears overrides specifically for a single vendor bid.
+    """
+    if bid_id in AUDIT_OVERRIDES:
+        AUDIT_OVERRIDES.pop(bid_id, None)
+    return {"status": "SUCCESS", "bid_id": bid_id, "message": f"Overrides for {bid_id} cleared."}
 
 
 @router.post("/clause-override")
