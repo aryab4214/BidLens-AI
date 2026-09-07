@@ -527,6 +527,49 @@ export default function Home() {
     }
   };
 
+  // Reset Overrides for Current Vendor or All Vendors
+  const handleResetVendorOverrides = async (vendor) => {
+    const v = vendor || selectedVendor;
+    if (!v) return;
+    try {
+      await fetch(`${getBackendUrl()}/audit/overrides/reset/${encodeURIComponent(v.file_id)}`, { method: 'POST' });
+      setOfficerOverrides((prev) => {
+        const next = { ...prev };
+        delete next[v.file_id];
+        return next;
+      });
+      // Re-run fresh automated audit
+      const auditRes = await fetch(`${getBackendUrl()}/audit/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_id: v.file_id, tender_id: tenderDocument?.tender_id || 'GEM/2026/B/892100' }),
+      });
+      if (auditRes.ok) {
+        const auditData = await auditRes.json();
+        const freshVendor = auditData.results;
+        setBids((prev) => prev.map((b) => (b.file_id === v.file_id ? freshVendor : b)));
+        if (selectedVendor && selectedVendor.file_id === v.file_id) {
+          setSelectedVendor(freshVendor);
+          setSelectedEvidenceClause(freshVendor.clause_level_decisions ? freshVendor.clause_level_decisions[0] : null);
+        }
+      }
+      alert(`All test overrides for ${v.vendor_name || 'this vendor'} have been cleared! Fresh audit restored.`);
+    } catch (e) {
+      alert(`Error resetting overrides: ${e.message}`);
+    }
+  };
+
+  const handleResetAllOverrides = async () => {
+    try {
+      await fetch(`${getBackendUrl()}/audit/overrides/clear`, { method: 'POST' });
+      setOfficerOverrides({});
+      setClauseNotes({});
+      alert('All test overrides have been completely cleared across all vendors!');
+    } catch (e) {
+      alert(`Error clearing overrides: ${e.message}`);
+    }
+  };
+
   // 7. Interactive Re-evaluation of a Vendor with Rectification File
   const handleSelectVendorForReEval = (vendor) => {
     setReEvalSelectedVendor(vendor);
@@ -1929,19 +1972,29 @@ export default function Home() {
                           style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '12.5px', marginBottom: '10px' }}
                         />
 
-                        <button
-                          className="btn btn-primary"
-                          style={{ width: '100%', fontSize: '12.5px', fontWeight: 700 }}
-                          onClick={() => {
-                            if (!selectedOverrideAction) {
-                              alert('Please select a decision action (Mark PASS, Mark EXEMPT, or Mark FAIL) first.');
-                            } else {
-                              handleApplyClauseOverride(selectedEvidenceClause, selectedOverrideAction);
-                            }
-                          }}
-                        >
-                          Record Decision &amp; Log to PDF Page 2 &rarr;
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                          <button
+                            className="btn btn-primary"
+                            style={{ flex: 2, fontSize: '12px', fontWeight: 700 }}
+                            onClick={() => {
+                              if (!selectedOverrideAction) {
+                                alert('Please select a decision action (Mark PASS, Mark EXEMPT, or Mark FAIL) first.');
+                              } else {
+                                handleApplyClauseOverride(selectedEvidenceClause, selectedOverrideAction);
+                              }
+                            }}
+                          >
+                            Record Decision &amp; Log to PDF &rarr;
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            style={{ flex: 1, fontSize: '11px', color: 'var(--critical)', fontWeight: 600 }}
+                            title="Reset all test overrides and restore fresh automated GFR audit"
+                            onClick={() => handleResetVendorOverrides(selectedVendor)}
+                          >
+                            Reset Overrides
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -2660,6 +2713,13 @@ export default function Home() {
                   }}
                 >
                   Reset to Default
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: '11.5px', padding: '6px 12px', color: 'var(--critical)', borderColor: 'var(--critical-border)' }}
+                  onClick={handleResetAllOverrides}
+                >
+                  Clear All Test Overrides
                 </button>
               </div>
             </div>
