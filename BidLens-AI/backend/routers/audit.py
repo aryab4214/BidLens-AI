@@ -71,12 +71,13 @@ async def trigger_audit(payload: RunAuditPayload):
             detail=f"Document '{file_id}' not found in uploaded_docs or sample_bids."
         )
 
-    # Clean fresh run: reset previous test overrides for this file unless explicitly retained
-    if audit_id in AUDIT_OVERRIDES and payload.tender_id != "KEEP_OVERRIDES":
-        AUDIT_OVERRIDES.pop(audit_id, None)
+    # audit_id is defined HERE — must be before any use
+    audit_id = file_id
+
+    # Clear any stale test overrides on every fresh run so PDF is always clean
+    AUDIT_OVERRIDES.pop(audit_id, None)
 
     audit_results = await run_full_audit(target_file)
-    audit_id = file_id
     AUDIT_CACHE[audit_id] = audit_results
 
     clean_id = audit_id.replace('.pdf','').replace('.docx','').replace('.xlsx','')
@@ -84,7 +85,7 @@ async def trigger_audit(payload: RunAuditPayload):
     generate_certified_audit_pdf(
         audit_results,
         pdf_report_path,
-        officer_overrides=AUDIT_OVERRIDES.get(audit_id, {})
+        officer_overrides={}
     )
 
     return {

@@ -231,6 +231,8 @@ export default function Home() {
   // 1-Click Complete Evaluation (RFP + All 4 Bids + Audit Execution)
   const handleOneClickCompleteEvaluation = async () => {
     setIsUploading(true);
+    setOfficerOverrides({});
+    setClauseNotes({});
     setStatusMessage('1-Click Audit: Loading RFP and all sample vendor bids...');
     try {
       // 1. Load Tender RFP
@@ -416,6 +418,9 @@ export default function Home() {
 
     setIsUploading(true);
     setStatusMessage(`Running GFR compliance audit across ${addedVendors.length} vendor submissions...`);
+    // Auto-clear any previous test overrides so evaluation is always fresh
+    setOfficerOverrides({});
+    setClauseNotes({});
     try {
       const evaluatedBids = [];
       for (const vendor of addedVendors) {
@@ -1972,29 +1977,19 @@ export default function Home() {
                           style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '12.5px', marginBottom: '10px' }}
                         />
 
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                          <button
-                            className="btn btn-primary"
-                            style={{ flex: 2, fontSize: '12px', fontWeight: 700 }}
-                            onClick={() => {
-                              if (!selectedOverrideAction) {
-                                alert('Please select a decision action (Mark PASS, Mark EXEMPT, or Mark FAIL) first.');
-                              } else {
-                                handleApplyClauseOverride(selectedEvidenceClause, selectedOverrideAction);
-                              }
-                            }}
-                          >
-                            Record Decision &amp; Log to PDF &rarr;
-                          </button>
-                          <button
-                            className="btn btn-secondary"
-                            style={{ flex: 1, fontSize: '11px', color: 'var(--critical)', fontWeight: 600 }}
-                            title="Reset all test overrides and restore fresh automated GFR audit"
-                            onClick={() => handleResetVendorOverrides(selectedVendor)}
-                          >
-                            Reset Overrides
-                          </button>
-                        </div>
+                        <button
+                          className="btn btn-primary"
+                          style={{ width: '100%', fontSize: '12.5px', fontWeight: 700 }}
+                          onClick={() => {
+                            if (!selectedOverrideAction) {
+                              alert('Please select a decision action (Mark PASS, Mark EXEMPT, or Mark FAIL) first.');
+                            } else {
+                              handleApplyClauseOverride(selectedEvidenceClause, selectedOverrideAction);
+                            }
+                          }}
+                        >
+                          Record Decision &amp; Log to PDF &rarr;
+                        </button>
                       </div>
                     </div>
                   ) : (
