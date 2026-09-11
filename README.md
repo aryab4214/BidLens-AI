@@ -111,7 +111,6 @@ BidLens-AI/
 │   │   └── pdf_generator.py             # ReportLab official audit report generator
 │   ├── uploaded_docs/                   # Local repository for uploaded tender PDFs
 │   ├── generated_reports/               # Generated official audit PDF dossiers
-│   ├── generate_comprehensive_samples.py # Script generating test bid packages
 │   ├── main.py                          # FastAPI entry point (Port 8000)
 │   ├── requirements.txt                 # Python dependencies
 │   └── .env.example                     # Environment configuration template
@@ -133,7 +132,10 @@ BidLens-AI/
 │       ├── BoQ_PriceSchedule_MegaTech.xlsx   # Financial Bill of Quantities (BoQ)
 │       ├── Bid_GlobalCorp_Ineligible.pdf     # Ineligible bid (PAN/GSTIN mismatch)
 │       └── Bid_GlobalCorp_Rectified_ReEvaluation.pdf # Re-evaluated rectified bid
-├── scripts/                             # Utility & public tunnel scripts
+├── docs/                                # Project documentation & handover dossiers
+│   └── SIH26100_BidLens_Project_Master_Handover.pdf # Master technical handover
+├── scripts/                             # Utility & deployment scripts
+│   ├── generate_comprehensive_samples.py # Script generating test bid packages
 │   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
 │   └── run_live_tunnel.ps1              # PowerShell live tunnel script
 ├── Start_BidLens.bat                    # 1-Click launcher for both servers
