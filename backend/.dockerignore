@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+.git
+.gitignore
+uploaded_docs/*
+!uploaded_docs/.gitkeep
+generated_reports/*
+!generated_reports/.gitkeep
+audit_decision_trail.json
