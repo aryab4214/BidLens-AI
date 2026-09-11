@@ -88,56 +88,54 @@ BidLens AI utilizes a validated **6-Layer Architecture** to guarantee determinis
 
 ```
 BidLens-AI/
-├── BidLens-AI/                          # Core Application Root
-│   ├── backend/                         # Layer 2-4: FastAPI Sovereign Backend
-│   │   ├── evidence_risk/               # Layer 4: Evidence & Risk Engine
-│   │   │   ├── contradiction.py         # Cross-document discrepancy detector
-│   │   │   ├── graph_engine.py          # NetworkX Clause-to-Evidence Knowledge Graph
-│   │   │   └── risk_scorer.py           # Explainable rejection risk scorer
-│   │   ├── models/                      # Pydantic Schemas & Data Contracts
-│   │   │   └── schemas.py               # API request/response models
-│   │   ├── orchestrator/                # Layer 3: Central Audit Orchestrator
-│   │   │   ├── ai_processing.py         # PyMuPDF + RapidOCR + NLP entity extraction
-│   │   │   ├── govt_verify.py           # Simulated GSTN & MCA21 verification
-│   │   │   ├── orchestrator.py          # Parallel 3-branch async dispatcher
-│   │   │   └── rule_engine.py           # Deterministic GFR 2017 & MSME rules
-│   │   ├── routers/                     # Layer 2: API Endpoints
-│   │   │   ├── audit.py                 # Audit initiation & status polling
-│   │   │   ├── document.py              # PDF upload, listing & SHA-256 fingerprinting
-│   │   │   └── review.py                # Officer review & decision logging
-│   │   ├── security/                    # Security & Air-Gapped Engine
-│   │   │   ├── offline_mode.py          # Sovereign system health & air-gap monitor
-│   │   │   └── sha256_audit.py          # Cryptographic hashing & prompt sanitizer
-│   │   ├── utils/                       # Utilities & PDF generators
-│   │   │   └── pdf_generator.py         # ReportLab official audit report generator
-│   │   ├── uploaded_docs/               # Local repository for uploaded tender PDFs
-│   │   ├── generated_reports/           # Generated official audit PDF dossiers
-│   │   ├── generate_comprehensive_samples.py # Script generating test bid packages
-│   │   ├── main.py                      # FastAPI entry point (Port 8000)
-│   │   ├── requirements.txt             # Python dependencies
-│   │   └── .env.example                 # Environment configuration template
-│   ├── frontend/                        # Layer 1: Next.js Officer Web Portal
-│   │   ├── pages/                       # Next.js Pages router
-│   │   │   ├── _app.js                  # Application wrapper & theme
-│   │   │   └── index.js                 # Officer dashboard & audit interface
-│   │   ├── public/                      # Static assets & Government of India logo
-│   │   ├── styles/                      # TailwindCSS & custom styles
-│   │   ├── package.json                 # Node.js dependencies & scripts
-│   │   └── next.config.js               # Next.js configuration
-│   ├── data/
-│   │   └── sample_bids/                 # 8 Pre-loaded Tender & Vendor Bids
-│   │       ├── Tender_RFP_GeM_Computers.pdf      # Official GeM Tender RFP
-│   │       ├── Bid_ApexLabs_MSME.pdf             # MSME vendor (Qualifies with waiver)
-│   │       ├── Bid_ApexLabs_Proposal.docx        # Technical proposal document
-│   │       ├── Scanned_Letter_ApexLabs.png       # Scanned/stamped authorization letter
-│   │       ├── Bid_MegaTech_BigBrand.pdf         # Large enterprise bid
-│   │       ├── BoQ_PriceSchedule_MegaTech.xlsx   # Financial Bill of Quantities (BoQ)
-│   │       ├── Bid_GlobalCorp_Ineligible.pdf     # Ineligible bid (PAN/GSTIN mismatch)
-│   │       └── Bid_GlobalCorp_Rectified_ReEvaluation.pdf # Re-evaluated rectified bid
-│   ├── Start_BidLens.bat                # 1-Click launcher for both servers
-│   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
-│   └── run_live_tunnel.ps1              # PowerShell live tunnel script
-├── Start_BidLens.bat                    # Root 1-Click full-stack launcher
+├── backend/                             # Layer 2-4: FastAPI Sovereign Backend
+│   ├── evidence_risk/                   # Layer 4: Evidence & Risk Engine
+│   │   ├── contradiction.py             # Cross-document discrepancy detector
+│   │   ├── graph_engine.py              # NetworkX Clause-to-Evidence Knowledge Graph
+│   │   └── risk_scorer.py               # Explainable rejection risk scorer
+│   ├── models/                          # Pydantic Schemas & Data Contracts
+│   │   └── schemas.py                   # API request/response models
+│   ├── orchestrator/                    # Layer 3: Central Audit Orchestrator
+│   │   ├── ai_processing.py             # PyMuPDF + RapidOCR + NLP entity extraction
+│   │   ├── govt_verify.py               # Simulated GSTN & MCA21 verification
+│   │   ├── orchestrator.py              # Parallel 3-branch async dispatcher
+│   │   └── rule_engine.py               # Deterministic GFR 2017 & MSME rules
+│   ├── routers/                         # Layer 2: API Endpoints
+│   │   ├── audit.py                     # Audit initiation & status polling
+│   │   ├── document.py                  # PDF upload, listing & SHA-256 fingerprinting
+│   │   └── review.py                    # Officer review & decision logging
+│   ├── security/                        # Security & Air-Gapped Engine
+│   │   ├── offline_mode.py              # Sovereign system health & air-gap monitor
+│   │   └── sha256_audit.py              # Cryptographic hashing & prompt sanitizer
+│   ├── utils/                           # Utilities & PDF generators
+│   │   └── pdf_generator.py             # ReportLab official audit report generator
+│   ├── uploaded_docs/                   # Local repository for uploaded tender PDFs
+│   ├── generated_reports/               # Generated official audit PDF dossiers
+│   ├── generate_comprehensive_samples.py # Script generating test bid packages
+│   ├── main.py                          # FastAPI entry point (Port 8000)
+│   ├── requirements.txt                 # Python dependencies
+│   └── .env.example                     # Environment configuration template
+├── frontend/                            # Layer 1: Next.js Officer Web Portal
+│   ├── pages/                           # Next.js Pages router
+│   │   ├── _app.js                      # Application wrapper & theme
+│   │   └── index.js                     # Officer dashboard & audit interface
+│   ├── public/                          # Static assets & Government of India logo
+│   ├── styles/                          # TailwindCSS & custom styles
+│   ├── package.json                     # Node.js dependencies & scripts
+│   └── next.config.js                   # Next.js configuration
+├── data/
+│   └── sample_bids/                     # 8 Pre-loaded Tender & Vendor Bids
+│       ├── Tender_RFP_GeM_Computers.pdf      # Official GeM Tender RFP
+│       ├── Bid_ApexLabs_MSME.pdf             # MSME vendor (Qualifies with waiver)
+│       ├── Bid_ApexLabs_Proposal.docx        # Technical proposal document
+│       ├── Scanned_Letter_ApexLabs.png       # Scanned/stamped authorization letter
+│       ├── Bid_MegaTech_BigBrand.pdf         # Large enterprise bid
+│       ├── BoQ_PriceSchedule_MegaTech.xlsx   # Financial Bill of Quantities (BoQ)
+│       ├── Bid_GlobalCorp_Ineligible.pdf     # Ineligible bid (PAN/GSTIN mismatch)
+│       └── Bid_GlobalCorp_Rectified_ReEvaluation.pdf # Re-evaluated rectified bid
+├── Start_BidLens.bat                    # 1-Click launcher for both servers
+├── run_live_tunnel.bat                  # 1-Click public HTTPS tunnel for jury demos
+├── run_live_tunnel.ps1                  # PowerShell live tunnel script
 ├── LICENSE                              # MIT License
 └── README.md                            # Documentation
 ```
@@ -180,7 +178,7 @@ If you prefer running the servers manually or are working on Linux/macOS:
 
 ```bash
 # 1. Navigate to the backend directory
-cd BidLens-AI/backend
+cd backend
 
 # 2. (Optional but recommended) Create & activate a virtual environment
 python -m venv venv
@@ -209,7 +207,7 @@ Open a **new** terminal tab or window:
 
 ```bash
 # 1. Navigate to the frontend directory
-cd BidLens-AI/frontend
+cd frontend
 
 # 2. Install Node.js dependencies
 npm install
@@ -226,9 +224,8 @@ npm run dev
 To share the running portal with judges or view it on a mobile phone / another laptop over the internet:
 
 1. Make sure both Backend and Frontend dependencies are installed.
-2. Run the tunnel batch script:
+2. Run the tunnel batch script directly:
    ```bash
-   cd BidLens-AI
    .\run_live_tunnel.bat
    ```
    *(Or using PowerShell: `.\run_live_tunnel.ps1`)*
@@ -254,7 +251,7 @@ BidLens AI is designed to function completely offline without internet connectiv
 
 ## 🧪 Testing with Pre-Loaded Sample Bids
 
-The platform includes 8 authentic tender and vendor documents in `BidLens-AI/data/sample_bids/`:
+The platform includes 8 authentic tender and vendor documents in `data/sample_bids/`:
 
 | File Name | Description | Expected Test Outcome |
 | :--- | :--- | :--- |
@@ -268,7 +265,7 @@ The platform includes 8 authentic tender and vendor documents in `BidLens-AI/dat
 
 **How to Test in the UI:**
 1. Open `http://localhost:3000`.
-2. Click on the 1-Click Sample Vendor buttons (ApexLabs, MegaTech, or GlobalCorp) or drag-and-drop any PDF from `BidLens-AI/data/sample_bids/`.
+2. Click on the 1-Click Sample Vendor buttons (ApexLabs, MegaTech, or GlobalCorp) or drag-and-drop any PDF from `data/sample_bids/`.
 3. Click **"Run Full Audit"** to witness parallel OCR, GFR rule checking, cross-document contradiction detection, and knowledge graph mapping in real time.
 
 ---
@@ -306,7 +303,7 @@ taskkill /PID <PID_NUMBER> /F
 ### Missing Python Packages
 Make sure you are running Python 3.10+ and have installed all requirements:
 ```bash
-pip install -r BidLens-AI/backend/requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 ### Node.js / NPM Issues
