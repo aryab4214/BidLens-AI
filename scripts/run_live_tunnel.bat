@@ -5,13 +5,13 @@ echo           BIDLENS AI - LIVE PUBLIC HOST & SHARING LAUNCHER
 echo ======================================================================
 echo.
 echo Starting FastAPI Backend (Port 8000)...
-start "BidLens-Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn main:app --host 127.0.0.1 --port 8000"
+start "BidLens-Backend" cmd /k "cd /d %~dp0..\backend && python -m uvicorn main:app --host 127.0.0.1 --port 8000"
 
 echo Waiting 3 seconds for backend initialization...
 timeout /t 3 /nobreak >nul
 
 echo Starting Next.js Production Frontend (Port 3000)...
-start "BidLens-Frontend" cmd /k "cd /d %~dp0frontend && npm start"
+start "BidLens-Frontend" cmd /k "cd /d %~dp0..\frontend && npm start"
 
 echo Waiting 3 seconds for frontend initialization...
 timeout /t 3 /nobreak >nul

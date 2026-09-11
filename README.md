@@ -133,9 +133,10 @@ BidLens-AI/
 │       ├── BoQ_PriceSchedule_MegaTech.xlsx   # Financial Bill of Quantities (BoQ)
 │       ├── Bid_GlobalCorp_Ineligible.pdf     # Ineligible bid (PAN/GSTIN mismatch)
 │       └── Bid_GlobalCorp_Rectified_ReEvaluation.pdf # Re-evaluated rectified bid
+├── scripts/                             # Utility & public tunnel scripts
+│   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
+│   └── run_live_tunnel.ps1              # PowerShell live tunnel script
 ├── Start_BidLens.bat                    # 1-Click launcher for both servers
-├── run_live_tunnel.bat                  # 1-Click public HTTPS tunnel for jury demos
-├── run_live_tunnel.ps1                  # PowerShell live tunnel script
 ├── LICENSE                              # MIT License
 └── README.md                            # Documentation
 ```
@@ -226,9 +227,9 @@ To share the running portal with judges or view it on a mobile phone / another l
 1. Make sure both Backend and Frontend dependencies are installed.
 2. Run the tunnel batch script directly:
    ```bash
-   .\run_live_tunnel.bat
+   .\scripts\run_live_tunnel.bat
    ```
-   *(Or using PowerShell: `.\run_live_tunnel.ps1`)*
+   *(Or using PowerShell: `.\scripts\run_live_tunnel.ps1`)*
 3. The script launches the backend, starts the frontend, and generates a secure public HTTPS URL via `localtunnel` (e.g., `https://xxxx.loca.lt`).
 4. Share that link with the judges to let them interact with the portal live!
 

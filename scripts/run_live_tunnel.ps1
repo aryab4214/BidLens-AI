@@ -5,14 +5,15 @@ Write-Host "====================================================================
 Write-Host ""
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RootDir = Split-Path -Parent $ScriptDir
 
 Write-Host "Starting FastAPI Backend (Port 8000)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$ScriptDir\backend'; python -m uvicorn main:app --host 127.0.0.1 --port 8000"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$RootDir\backend'; python -m uvicorn main:app --host 127.0.0.1 --port 8000"
 
 Start-Sleep -Seconds 3
 
 Write-Host "Starting Next.js Frontend (Port 3000)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$ScriptDir\frontend'; npm start"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$RootDir\frontend'; npm start"
 
 Start-Sleep -Seconds 3
 
