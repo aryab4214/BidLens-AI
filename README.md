@@ -151,7 +151,6 @@ BidLens-AI/
 │   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
 │   └── run_live_tunnel.ps1              # PowerShell live tunnel script
 ├── Start_BidLens.bat                    # 1-Click launcher for both local servers
-├── railway.json                         # Railway cloud deployment manifest
 ├── vercel.json                          # Monorepo Vercel routing configuration
 ├── LICENSE                              # MIT License
 └── README.md                            # Complete Project Documentation

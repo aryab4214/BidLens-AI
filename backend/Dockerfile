@@ -27,7 +27,7 @@ COPY . .
 # Ensure storage directories exist
 RUN mkdir -p uploaded_docs generated_reports
 
-# Expose port (Railway / Render inject $PORT at runtime)
+# Expose port (Render / cloud containers inject $PORT at runtime)
 EXPOSE 8000
 
 # Health check
