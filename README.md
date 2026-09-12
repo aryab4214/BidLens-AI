@@ -4,6 +4,7 @@
 
 ---
 
+[![CI](https://github.com/BidLens-AI/BidLens-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/BidLens-AI/BidLens-AI/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Frontend%20Live-000000.svg?logo=vercel)](https://bidlens-ai.vercel.app)

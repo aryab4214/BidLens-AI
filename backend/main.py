@@ -7,10 +7,48 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import document, audit, review
 from security.offline_mode import get_system_health_status
 
+tags_metadata = [
+    {
+        "name": "System",
+        "description": "Sovereign edge health metrics, air-gapped readiness, memory consumption, and CERT-In security integrity status.",
+    },
+    {
+        "name": "Document",
+        "description": "Tender RFP and vendor bid proposal document ingestion, cryptographic SHA-256 fingerprinting, and digital extraction.",
+    },
+    {
+        "name": "Audit",
+        "description": "Automated 3-branch evaluation orchestrating deterministic GFR 2017 rules, cross-document contradiction checks, and risk scoring.",
+    },
+    {
+        "name": "Review",
+        "description": "Human-in-the-loop procurement officer review portal, statutory override logs, and certified PDF dossier generation.",
+    },
+]
+
 app = FastAPI(
-    title="BidLens AI",
-    description="AI-Powered GeM Bid Compliance Verification Platform - SIH 2026",
-    version="1.0.0"
+    title="BidLens AI — Autonomous GeM Procurement Auditor API",
+    description="""
+## Smart India Hackathon (SIH) 2026 — Problem Statement ID: 26100
+
+BidLens AI is an intelligent procurement compliance auditor designed for the **Government e-Marketplace (GeM)**.
+
+### Key Architectural Pillars:
+* **Deterministic GFR 2017 Rule Engine:** Zero-hallucination compliance audits for Rules 149, 160, 170 and MSME Order 2012.
+* **Cross-Document Contradiction Detector:** Detects contradictory PANs, expired GSTINs, and inflated turnover claims across attachments.
+* **100% Sovereign Edge Ready:** Operates fully air-gapped with zero external cloud retention.
+* **Cryptographic Tamper-Proofing:** Immediate SHA-256 fingerprinting on document receipt.
+""",
+    version="1.0.0",
+    contact={
+        "name": "Team Hexagon (SIH26009)",
+        "url": "https://bidlens-ai.vercel.app",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    openapi_tags=tags_metadata
 )
 
 # Allow frontend (Next.js on port 3000) and any local client to talk to backend

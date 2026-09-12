@@ -1,0 +1,31 @@
+name: BidLens AI CI
+
+on:
+  push:
+    branches: [ main, supreme-leader ]
+  pull_request:
+    branches: [ main, supreme-leader ]
+
+jobs:
+  test-backend:
+    name: Backend Tests & Compliance Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Core Test Suite
+        run: |
+          python -m unittest discover -s backend/tests -v
