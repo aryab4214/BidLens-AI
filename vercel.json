@@ -1,0 +1,24 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/.next",
+  "installCommand": "cd frontend && npm install",
+  "rewrites": [
+    {
+      "source": "/audit/:path*",
+      "destination": "https://bidlens-ai.onrender.com/audit/:path*"
+    },
+    {
+      "source": "/document/:path*",
+      "destination": "https://bidlens-ai.onrender.com/document/:path*"
+    },
+    {
+      "source": "/review/:path*",
+      "destination": "https://bidlens-ai.onrender.com/review/:path*"
+    },
+    {
+      "source": "/system/:path*",
+      "destination": "https://bidlens-ai.onrender.com/system/:path*"
+    }
+  ]
+}
