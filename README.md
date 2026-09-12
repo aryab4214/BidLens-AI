@@ -28,7 +28,7 @@ Manual evaluation is prone to:
 * **Human Fatigue & Oversight:** Overlooked cross-document contradictions (e.g., turnover discrepancies between cover letters and balance sheets).
 * **Unfair MSME Disqualifications:** Accidental rejections due to complex statutory exemptions under the **MSME Policy Order 2012** and **GFR 2017**.
 * **Long Turnaround Times:** Weeks spent manually validating GSTIN, MCA company statuses, and GFR clauses.
-* **Integrity Risks:** Lack of an immutable audit trail and potential tampering with submitted documents.
+* **Integrity Risks:** Lack of an immutable audit trail and potential tampering with submitted documents
 
 **BidLens AI** is an intelligent procurement co-pilot designed to streamline GeM bid audits. It verifies compliance against statutory rules deterministically, detects subtle cross-document contradictions, calculates an explainable rejection-risk score with exact clause and page references, and spotlights high-value MSME vendors.
 
