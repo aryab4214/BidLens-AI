@@ -6,9 +6,16 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Frontend%20Live-000000.svg?logo=vercel)](https://bidlens-ai.vercel.app)
+[![Render Cloud Backend](https://img.shields.io/badge/Render-Backend%20Live-46E3B7.svg?logo=render)](https://bidlens-ai.onrender.com/system/health)
 [![GFR 2017 Compliant](https://img.shields.io/badge/GFR%202017-Validated-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![SIH 2026](https://img.shields.io/badge/SIH-2026-orange.svg)]()
+
+> 🌐 **Live Public Prototype:** [https://bidlens-ai.vercel.app](https://bidlens-ai.vercel.app)  
+> ⚡ **Live Sovereign Backend API:** [https://bidlens-ai.onrender.com](https://bidlens-ai.onrender.com)  
+> 📚 **Interactive Swagger API Docs:** [https://bidlens-ai.onrender.com/docs](https://bidlens-ai.onrender.com/docs)  
+> 🛡️ **Edge System Health Check:** [https://bidlens-ai.onrender.com/system/health](https://bidlens-ai.onrender.com/system/health)
 
 ---
 
@@ -111,6 +118,8 @@ BidLens-AI/
 │   │   └── pdf_generator.py             # ReportLab official audit report generator
 │   ├── uploaded_docs/                   # Local repository for uploaded tender PDFs
 │   ├── generated_reports/               # Generated official audit PDF dossiers
+│   ├── Dockerfile                       # Production Debian-slim container definition
+│   ├── .dockerignore                    # Build exclusions for Docker container
 │   ├── main.py                          # FastAPI entry point (Port 8000)
 │   ├── requirements.txt                 # Python dependencies
 │   └── .env.example                     # Environment configuration template
@@ -120,7 +129,10 @@ BidLens-AI/
 │   │   └── index.js                     # Officer dashboard & audit interface
 │   ├── public/                          # Static assets & Government of India logo
 │   ├── styles/                          # TailwindCSS & custom styles
+│   ├── utils/                           # Client utilities
+│   │   └── sihSampleCache.js            # Zero-failure sovereign evaluation cache
 │   ├── package.json                     # Node.js dependencies & scripts
+│   ├── vercel.json                      # Vercel edge reverse-proxy configuration
 │   └── next.config.js                   # Next.js configuration
 ├── data/
 │   └── sample_bids/                     # 8 Pre-loaded Tender & Vendor Bids
@@ -138,9 +150,11 @@ BidLens-AI/
 │   ├── generate_comprehensive_samples.py # Script generating test bid packages
 │   ├── run_live_tunnel.bat              # 1-Click public HTTPS tunnel for jury demos
 │   └── run_live_tunnel.ps1              # PowerShell live tunnel script
-├── Start_BidLens.bat                    # 1-Click launcher for both servers
+├── Start_BidLens.bat                    # 1-Click launcher for both local servers
+├── railway.json                         # Railway cloud deployment manifest
+├── vercel.json                          # Monorepo Vercel routing configuration
 ├── LICENSE                              # MIT License
-└── README.md                            # Documentation
+└── README.md                            # Complete Project Documentation
 ```
 
 ---
